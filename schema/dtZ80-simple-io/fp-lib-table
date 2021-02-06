@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name package_connectors)(type Legacy)(uri ${KIPRJMOD}/package_connectors.mod)(options "")(descr ""))
+)

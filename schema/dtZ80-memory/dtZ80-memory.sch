@@ -13,26 +13,6 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L dk_Rectangular-Connectors-Headers-Male-Pins:PRPC040SAAN-RC J1
-U 1 1 5FDACB91
-P 4100 6000
-F 0 "J1" H 4108 6215 50  0000 C CNN
-F 1 "PRPC040SAAN-RC" H 4108 6124 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x40_P2.54mm_Vertical" H 4300 6200 50  0001 L CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Sullins%20PDFs/xRxCzzzSxxN-RC_ST_11635-B.pdf" V 4300 6300 50  0001 L CNN
-F 4 "S1011EC-40-ND" H 4300 6400 60  0001 L CNN "Digi-Key_PN"
-F 5 "PRPC040SAAN-RC" H 4300 6500 60  0001 L CNN "MPN"
-F 6 "Connectors, Interconnects" H 4300 6600 60  0001 L CNN "Category"
-F 7 "Rectangular Connectors - Headers, Male Pins" H 4300 6700 60  0001 L CNN "Family"
-F 8 "https://media.digikey.com/PDF/Data%20Sheets/Sullins%20PDFs/xRxCzzzSxxN-RC_ST_11635-B.pdf" H 4300 6800 60  0001 L CNN "DK_Datasheet_Link"
-F 9 "/product-detail/en/sullins-connector-solutions/PRPC040SAAN-RC/S1011EC-40-ND/2775214" H 4300 6900 60  0001 L CNN "DK_Detail_Page"
-F 10 "CONN HEADER VERT 40POS 2.54MM" H 4300 7000 60  0001 L CNN "Description"
-F 11 "Sullins Connector Solutions" H 4300 7100 60  0001 L CNN "Manufacturer"
-F 12 "Active" H 4300 7200 60  0001 L CNN "Status"
-	1    4100 6000
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
 	6100 5900 6100 5550
 Text Label 6100 5700 3    50   ~ 0
@@ -178,8 +158,6 @@ Wire Wire Line
 	5800 5300 5950 5300
 Wire Wire Line
 	5950 5300 5950 5100
-Wire Wire Line
-	5650 5100 5650 5450
 Wire Wire Line
 	5650 5650 5700 5650
 Wire Wire Line
@@ -336,8 +314,6 @@ Connection ~ 5950 5100
 Wire Wire Line
 	5650 5100 5650 4800
 Connection ~ 5650 5100
-Wire Wire Line
-	5800 5300 5800 5550
 $Comp
 L power:+5V #PWR0101
 U 1 1 5FE81D91
@@ -389,54 +365,6 @@ Wire Wire Line
 Wire Wire Line
 	4500 2350 4500 2600
 Connection ~ 5800 2350
-$Comp
-L power:GND #PWR04
-U 1 1 5FF252A8
-P 8750 4600
-F 0 "#PWR04" H 8750 4350 50  0001 C CNN
-F 1 "GND" H 8755 4427 50  0000 C CNN
-F 2 "" H 8750 4600 50  0001 C CNN
-F 3 "" H 8750 4600 50  0001 C CNN
-	1    8750 4600
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:+5V #PWR03
-U 1 1 5FF2590B
-P 8700 3950
-F 0 "#PWR03" H 8700 3800 50  0001 C CNN
-F 1 "+5V" H 8715 4123 50  0000 C CNN
-F 2 "" H 8700 3950 50  0001 C CNN
-F 3 "" H 8700 3950 50  0001 C CNN
-	1    8700 3950
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:PWR_FLAG #FLG01
-U 1 1 5FF265E6
-P 9000 3950
-F 0 "#FLG01" H 9000 4025 50  0001 C CNN
-F 1 "PWR_FLAG" H 9000 4123 50  0000 C CNN
-F 2 "" H 9000 3950 50  0001 C CNN
-F 3 "~" H 9000 3950 50  0001 C CNN
-	1    9000 3950
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:PWR_FLAG #FLG02
-U 1 1 5FF26A37
-P 9050 4600
-F 0 "#FLG02" H 9050 4675 50  0001 C CNN
-F 1 "PWR_FLAG" H 9050 4773 50  0000 C CNN
-F 2 "" H 9050 4600 50  0001 C CNN
-F 3 "~" H 9050 4600 50  0001 C CNN
-	1    9050 4600
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9000 3950 8700 3950
-Wire Wire Line
-	9050 4600 8750 4600
 $Comp
 L 74xx:74LS00 U1
 U 1 1 5FF2F1D4
@@ -510,8 +438,6 @@ Text Label 6600 5300 0    50   ~ 0
 WR
 Wire Wire Line
 	7450 4700 7650 4700
-Wire Wire Line
-	7650 4700 7650 3650
 Wire Wire Line
 	7650 3650 6300 3650
 Wire Wire Line
@@ -587,31 +513,68 @@ F 3 "" H 9200 3550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:PWR_FLAG #FLG?
-U 1 1 5FFE325E
-P 5650 5450
-F 0 "#FLG?" H 5650 5525 50  0001 C CNN
-F 1 "PWR_FLAG" H 5650 5623 50  0000 C CNN
-F 2 "" H 5650 5450 50  0001 C CNN
-F 3 "~" H 5650 5450 50  0001 C CNN
-	1    5650 5450
-	1    0    0    -1  
+L rc2014bus:RC2014Bus J1
+U 1 1 60225818
+P 6000 6100
+F 0 "J1" V 6363 6055 50  0000 C CNN
+F 1 "RC2014Bus" V 6454 6055 50  0000 C CNN
+F 2 "" H 6000 6100 50  0001 C CNN
+F 3 "~" H 6000 6100 50  0001 C CNN
+	1    6000 6100
+	0    -1   1    0   
 $EndComp
-Connection ~ 5650 5450
 Wire Wire Line
-	5650 5450 5650 5650
+	5650 5100 5650 5650
+Wire Wire Line
+	5800 5300 5800 5900
+Wire Wire Line
+	7650 4700 7650 3650
+Wire Wire Line
+	8950 4850 8650 4850
+Wire Wire Line
+	8950 4200 8650 4200
 $Comp
-L power:PWR_FLAG #FLG?
-U 1 1 5FFE3927
-P 5800 5550
-F 0 "#FLG?" H 5800 5625 50  0001 C CNN
-F 1 "PWR_FLAG" H 5800 5723 50  0000 C CNN
-F 2 "" H 5800 5550 50  0001 C CNN
-F 3 "~" H 5800 5550 50  0001 C CNN
-	1    5800 5550
+L power:PWR_FLAG #FLG02
+U 1 1 5FF26A37
+P 8950 4850
+F 0 "#FLG02" H 8950 4925 50  0001 C CNN
+F 1 "PWR_FLAG" H 8950 5023 50  0000 C CNN
+F 2 "" H 8950 4850 50  0001 C CNN
+F 3 "~" H 8950 4850 50  0001 C CNN
+	1    8950 4850
 	1    0    0    -1  
 $EndComp
-Connection ~ 5800 5550
-Wire Wire Line
-	5800 5550 5800 5900
+$Comp
+L power:PWR_FLAG #FLG01
+U 1 1 5FF265E6
+P 8950 4200
+F 0 "#FLG01" H 8950 4275 50  0001 C CNN
+F 1 "PWR_FLAG" H 8950 4373 50  0000 C CNN
+F 2 "" H 8950 4200 50  0001 C CNN
+F 3 "~" H 8950 4200 50  0001 C CNN
+	1    8950 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR03
+U 1 1 5FF2590B
+P 8650 4200
+F 0 "#PWR03" H 8650 4050 50  0001 C CNN
+F 1 "+5V" H 8665 4373 50  0000 C CNN
+F 2 "" H 8650 4200 50  0001 C CNN
+F 3 "" H 8650 4200 50  0001 C CNN
+	1    8650 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR04
+U 1 1 5FF252A8
+P 8650 4850
+F 0 "#PWR04" H 8650 4600 50  0001 C CNN
+F 1 "GND" H 8655 4677 50  0000 C CNN
+F 2 "" H 8650 4850 50  0001 C CNN
+F 3 "" H 8650 4850 50  0001 C CNN
+	1    8650 4850
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
