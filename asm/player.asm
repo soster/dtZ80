@@ -1,30 +1,21 @@
 ;Universal PT2 and PT3 player for ZX Spectrum and MSX
 ;(c)2004-2007 S.V.Bulba <vorobey@mail.khstu.ru>
 ;http://bulba.untergrund.net (http://bulba.at.kz)
-
-;Release number
-Release EQU "1"
-
+;adopted by Stefan Ostermann for the dtZ80 and rasm
 
 ;Only works if copied into RAM:
 RAM_DEST equ $8000
 
-stackpointer2 equ $cfff  ;Address for the stack pointer
+stackpointer2 equ $cfff  ;Address for the dtZ80 stack pointer
+
 
 
 ;Conditional assembly
-;1) Version of ROUT (ZX or MSX standards)
-ZX=0
-MSX=0
-RC=1
+
 ;2) Current position counter at (START+11)
 CurPosCounter=0
-;3) Allow channels allocation bits at (START+10)
-ACBBAC=0
 ;4) Allow loop checking and disabling
 LoopChecker=0
-;5) Insert official identificator
-Id=1
 
 ;Features
 ;--------
@@ -54,29 +45,31 @@ Id=1
 ;Call MUTE or INIT one more time to mute sound after stopping
 ;playing
 
-	ORG #0000
-
-
+  ORG #0000
   ;copy into RAM:
   ld sp,stackpointer2
   ld hl,BOOTSTRAP_END ;Code to be moved
   ld de,RAM_DEST ;Destination address
-  ld bc,7000;
+  ld bc,20000;guess how much bytes to copy
   ldir                ;Copy
   jp #8000
 BOOTSTRAP_END:
 ORG #8000,BOOTSTRAP_END
 START_RAM:
   ;Show some numbers:
+  ld a,0
+  ld (ram_counter),a
   ld a,1              ;Offset for the number to display
   call segprint_num   ;Display number stored in a
   call delay2
   ld a,2
   call segprint_num
   call delay2
-
-  ld a,3
-  call segprint_num
+  call inc_ram_counter
+  call ram_counter_segprint
+  call delay2
+  call inc_ram_counter
+  call ram_counter_segprint
   call delay2
   call start
 
@@ -140,10 +133,6 @@ SETUP	DB 0 ;set bit0, if you want to play without looping
 CurPos	DB 0 ;for visualization only (i.e. no need for playing)
 	ENDIF
 
-;Identifier
-	IF Id
-	DB "=Uni PT2 and PT3 Player r.",Release,"="
-	ENDIF
 
 	IF LoopChecker
 CHECKLP	LD HL,SETUP
@@ -166,8 +155,8 @@ MUTE	XOR A
 
 INIT
 ;HL - AddressOfModule
-  ld a,4
-  call segprint_num
+  call inc_ram_counter
+  call ram_counter_segprint
   call delay2
 	LD A,(START+10)
 	AND 2
@@ -1146,8 +1135,6 @@ CH_ONDL	LD (IX+CHP.COnOff),A
 
 PLAY
   push af
-  ld a,5
-  call segprint_num
   pop af
   XOR A
 	LD (AddToEn),A
@@ -1201,7 +1188,7 @@ PatsPtr EQU $+1
 	LD HL,#2121
 	ADD HL,DE
 MODADDR	EQU $+1
-	LD DE,#1111
+  LD DE,#1111
 	LD (PSP_+1),SP
 	LD SP,HL
 	POP HL
@@ -1216,6 +1203,8 @@ MODADDR	EQU $+1
 	LD (AdInPtC),HL
 PSP_	LD SP,#3131
 PL1A	LD IX,ChanA+12
+  call inc_ram_counter
+  call ram_counter_segprint
 	CALL PTDECOD
 	LD (AdInPtA),BC
 
@@ -1290,67 +1279,11 @@ ESldAdd	EQU $+1
 	LD (CurESld),HL
 
 ROUT
-	IF ACBBAC
-	LD A,(SETUP)
-	AND 12
-	JR Z,ABC
-	ADD A,CHTABLE
-	LD E,A
-	ADC A,CHTABLE/256
-	SUB E
-	LD D,A
-	LD B,0
-	LD IX,AYREGS
-	LD HL,AYREGS
-	LD A,(DE)
-	INC DE
-	LD C,A
-	ADD HL,BC
-	LD A,(IX+TonB)
-	LD C,(HL)
-	LD (IX+TonB),C
-	LD (HL),A
-	INC HL
-	LD A,(IX+TonB+1)
-	LD C,(HL)
-	LD (IX+TonB+1),C
-	LD (HL),A
-	LD A,(DE)
-	INC DE
-	LD C,A
-	ADD HL,BC
-	LD A,(IX+AmplB)
-	LD C,(HL)
-	LD (IX+AmplB),C
-	LD (HL),A
-	LD A,(DE)
-	INC DE
-	LD (RxCA1),A
-	XOR 8
-	LD (RxCA2),A
-	LD HL,AYREGS+Mixer
-	LD A,(DE)
-	AND (HL)
-	LD E,A
-	LD A,(HL)
-RxCA1	LD A,(HL)
-	AND %010010
-	OR E
-	LD E,A
-	LD A,(HL)
-	AND %010010
-RxCA2	OR E
-	OR E
-	LD (HL),A
-ABC
-	ENDIF
-
-	IF RC
 	XOR A
 	LD C,#D8
 	LD HL,AYREGS
 LOUT	OUT (C),A
-	LD C,#D0
+  LD C,#D0
 	OUTI
 	LD C,#D8
 	INC A
@@ -1359,58 +1292,11 @@ LOUT	OUT (C),A
 	OUT (C),A
 	LD A,(HL)
 	AND A
+
 	RET M
 	LD C,#D0
 	OUT (C),A
 	RET
-	ENDIF
-
-	IF ZX
-	XOR A
-	LD DE,#FFBF
-	LD BC,#FFFD
-	LD HL,AYREGS
-LOUT	OUT (C),A
-	LD B,E
-	OUTI
-	LD B,D
-	INC A
-	CP 13
-	JR NZ,LOUT
-	OUT (C),A
-	LD A,(HL)
-	AND A
-	RET M
-	LD B,E
-	OUT (C),A
-	RET
-	ENDIF
-
-	IF MSX
-;MSX version of ROUT (c)Dioniso
-	XOR A
-	LD C,#A0
-	LD HL,AYREGS
-LOUT	OUT (C),A
-	INC C
-	OUTI
-	DEC C
-	INC A
-	CP 13
-	JR NZ,LOUT
-	OUT (C),A
-	LD A,(HL)
-	AND A
-	RET M
-	INC C
-	OUT (C),A
-	RET
-	ENDIF
-
-	IF ACBBAC
-CHTABLE	EQU $-4
-	DB 4,5,15,%001001,0,7,7,%100100
-	ENDIF
 
 NT_DATA	DB (T_NEW_0-T1_)*2
 	DB TCNEW_0-T_
@@ -1620,12 +1506,12 @@ outer DEC BC                  ;Decrements BC
 
 MDLADDR EQU $
 ;incbin "tunes/through_yeovil.pt3"
-incbin "tunes/altitude.pt3"
-	;incbin tunes/nq_-_synchronization_(2015).pt3
-	;incbin tunes/nq_-_louboutin_(2016).pt3
-	;incbin tunes/MmcM_-_Recollection_(2015).pt3
-	;incbin tunes/luchibobra_-_three_bad_mice.pt3
-	;incbin tunes/MmcM_-_Agressive_Attack.pt3
+;incbin "tunes/altitude.pt3"
+	;incbin "tunes/nq_-_synchronization_(2015).pt3"
+;incbin "tunes/nq_-_louboutin_(2016).pt3"
+;incbin "tunes/MmcM_-_Recollection_(2015).pt3"
+incbin "tunes/luchibobra_-_three_bad_mice.pt3"
+	;incbin "tunes/MmcM_-_Agressive_Attack.pt3"
 ;Release 0 steps:
 ;02/27/2005
 ;Merging PT2 and PT3 players; debug
