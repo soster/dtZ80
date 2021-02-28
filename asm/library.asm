@@ -3,6 +3,7 @@ sevensegio equ $00 	    ;I/O port 7 segment A0-A7=0
 lcd_command equ $20	    ;LCD command I/O port, A5=1
 lcd_data equ $21        ;LCD data I/O port,A5=1,A0=1
 button	equ $40	        ;Button Input, dummy for now
+keyboard equ $80
 stackpointer equ $8fff  ;Address for the stack pointer
 
 ;Startup command sequence for the lcd:

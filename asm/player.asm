@@ -1510,8 +1510,9 @@ MDLADDR EQU $
 	;incbin "tunes/nq_-_synchronization_(2015).pt3"
 ;incbin "tunes/nq_-_louboutin_(2016).pt3"
 ;incbin "tunes/MmcM_-_Recollection_(2015).pt3"
-incbin "tunes/luchibobra_-_three_bad_mice.pt3"
+;incbin "tunes/luchibobra_-_three_bad_mice.pt3"
 	;incbin "tunes/MmcM_-_Agressive_Attack.pt3"
+  incbin "tunes/Voxel - Ghostbusters (TSmix) by voxel_triumph.pt3"
 ;Release 0 steps:
 ;02/27/2005
 ;Merging PT2 and PT3 players; debug

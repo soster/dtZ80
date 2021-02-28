@@ -15,6 +15,13 @@ I use [rasm](https://github.com/mkoloberdin/rasm) as an assembler.
 ![CPU Card](/images/cpu-board.jpg)
 
 ## Next steps
+
+### Serial Interface
+Chip to use: Z84C40, called SIO
+http://rc2014.co.uk/wp-content/uploads/2017/06/SIO2.pdf
+
+B/A SelPort B or A Select(input, active High). This pin defines which port isaccessed during a data transfer between the Z80 CPU and the Z80 PIO. ALow level on this pin selects Port A while a High level selects Port B.Often, Address bit A0 from the CPU is used for this selection function.C/D SelControl or Data Select(input, active High). This pin defines the type ofdata transfer to be performed between the CPU and the PIO. A High levelon this pin during a CPU write to the PIO causes the Z80 data bus to beinterpreted as a command for the port selected by the B/A Select line. ALowlevelonthispinmeansthattheZ80databusisbeingusedtotransferdata between the CPU and the PIO. Often, Address bit Al from the CPU isused for this function.
+
 ### Graphics
 Based on: TMS9918A
 Problem: Works only with DRAM for SRAM
