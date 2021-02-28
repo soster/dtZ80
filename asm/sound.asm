@@ -3,9 +3,8 @@
 ;Depends on RAM and therefore uses call and ret
 
 ;Constants
-register_port equ $d8
 data_port equ $d0
-
+register_port equ $d8
 
 org 0
     call startup
