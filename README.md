@@ -17,7 +17,7 @@ The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.
 
 ## Images
 
-![dtZ80](/images/dtZ80-1.jpg)
+![dtZ80](/images/dtZ80.jpg)
 ![CPU Card](/images/cpu-board.jpg)
 
 
@@ -38,7 +38,7 @@ The 74LS138 determines the address space:
 #### Parallel Interface
 The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an error while designing the pcb, it has the following pins (GND=Pin 1):
 
-![Parallel Port](parallel-port.png "Parallel Port")
+![Parallel Port](/images/parallel-port.png "Parallel Port")
 
 #### Serial Interface
 Chip to use: Z84C40, called SIO
