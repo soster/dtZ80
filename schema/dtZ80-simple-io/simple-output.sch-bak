@@ -664,10 +664,10 @@ Wire Wire Line
 Wire Wire Line
 	7450 1950 7450 1250
 $Comp
-L Connector_Generic:Conn_01x02 J1_5VtoSerial
+L Connector_Generic:Conn_01x02 J1_5VtoSerial1
 U 1 1 6000661D
 P 7650 1150
-F 0 "J1_5VtoSerial" H 7730 1142 50  0000 L CNN
+F 0 "J1_5VtoSerial1" H 7730 1142 50  0000 L CNN
 F 1 "Conn_01x02" H 7730 1051 50  0000 L CNN
 F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 7650 1150 50  0001 C CNN
 F 3 "~" H 7650 1150 50  0001 C CNN
