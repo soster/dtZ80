@@ -19,7 +19,12 @@ SIO_DB  EQU     41h; Not used
 
 
 SEVENSEGIO
-        EQU     $00; 7 segment base address
+        EQU     0x00; 7 segment base address
+
+LCD_COMMAND
+        EQU     0x20	    ;LCD command I/O port, A5=1
+LCD_DATA
+        EQU     0x21        ;LCD data I/O port,A5=1,A0=1
 
 RAMCELL EQU     0x8000
 
@@ -58,8 +63,8 @@ MAIN:
 
         CALL    A_RTS_OFF        ; remove RTS
         LD      HL,SERIAL_MESSAGE; Message address, 0 terminated
-
-MESSAGE_LOOP:                   ; Loop back here for next character
+        
+SERIAL_MESSAGE_LOOP:                   ; Loop back here for next character
         LD      A,(HL)          ; Load character into A
         AND     A               ; Test for end of string (A=0)
         JR      Z,MESSAGE_LOOP_DONE
@@ -68,13 +73,31 @@ MESSAGE_LOOP:                   ; Loop back here for next character
         INC     HL              ; Point to next character
         LD      D,10
         CALL    DELAY
-        JR      MESSAGE_LOOP    ; Loop back for next character
+        JR      SERIAL_MESSAGE_LOOP    ; Loop back for next character
 MESSAGE_LOOP_DONE:
-        LD      D,255
+        LD      HL,commands      ;Address of command list for LCD, $ff terminated
+
+LCD_COM_LOOP:
+        CALL    LCD_WAIT
+        LD      A,(HL)           ;Next command
+        INC     A               ;Add 1 so we can test for $ff...
+        JR      Z,LCD_COM_END    ;...by testing for zero
+        DEC     A               ;Restore the actual value
+        OUT     (LCD_COMMAND),A ;Output it.
+
+        INC     HL              ;Next command
+        JR      LCD_COM_LOOP     ;Repeat
+LCD_COM_END:
+        LD      D,ffh
         CALL    DELAY
-        LD      A,255
+        LD      A,6h
         OUT     (SEVENSEGIO),A
-        HALT
+
+        
+ENDLESS_LOOP:
+        LD      D,ffh
+        CALL    DELAY
+        CALL    ENDLESS_LOOP
 
 ;-------------------------------------------------
 SET_CTC:
@@ -148,15 +171,16 @@ SET_SIO:
         LD      A,00000010b      ; write into WR0: select WR2
         OUT     (SIO_CB),A
         LD      A,0h             ; write into WR2: set interrupt vector, but bits D3/D2/D1 of this vector
-                            ; will be affected by the channel & condition that raised the interrupt
-                            ; (see datasheet): in our example, 0x0C for Ch.A receiving a char, 0x0E
-                            ; for special conditions
+                                ; will be affected by the channel & condition that raised the interrupt
+                                ; (see datasheet): in our example, 0x0C for Ch.A receiving a char, 0x0E
+                                ; for special conditions
         OUT     (SIO_CB),A
+        
         ; the following are settings for channel A
         LD      A,01h            ; write into WR0: select WR1
         OUT     (SIO_CA),A
         LD      A,00011000b      ; interrupts on every RX char; parity is no special condition;
-                            ; buffer overrun is special condition
+                                 ; buffer overrun is special condition
         OUT     (SIO_CA),A
 SIO_A_EI:
         ;enable SIO channel A RX
@@ -208,16 +232,18 @@ SIO_A_DI:
         RET
 
 RX_CHA_AVAILABLE:
-        PUSH    AF             ; backup AF
-        CALL    A_RTS_OFF      ; disable RTS
-        IN      A,(SIO_DA)       ; read RX character into A
+        PUSH    AF              ; backup AF
+        CALL    A_RTS_OFF       ; disable RTS
+        IN      A,(SIO_DA)      ; read RX character into A
         OUT     (SIO_DA),A      ; echo char to transmitter
-        CALL    TX_EMP         ; wait for outgoing char to be sent
-        ;call RX_EMP         ; flush receive buffer
-        LD      A,(RAMCELL)      ; change the pattern to show to the external
-        XOR     11000000b     ; world that this ISR was honored
+        OUT     (SEVENSEGIO),A  ; echo value to 7seg
+        OUT     (LCD_DATA),A    ; echo value to lcd
+        CALL    TX_EMP          ; wait for outgoing char to be sent
+        ;call RX_EMP            ; flush receive buffer
+        LD      A,(RAMCELL)     ; change the pattern to show to the external
+        XOR     11000000b       ; world that this ISR was honored
         LD      (RAMCELL),A
-        CALL    A_RTS_ON       ; enable again RTS
+        CALL    A_RTS_ON        ; enable again RTS
         POP     AF
         EI
         RETI
@@ -246,5 +272,16 @@ RX_EMP:
         IN      A,(SIO_DA)      ;read that char
         JP      RX_EMP
 
+LCD_WAIT:
+        ;wait until lcd is ready
+        IN      A,(LCD_COMMAND) ;Read the status into A
+                                ;trick to conditionally jump if bit 7 is true:
+        RLCA                    ;Rotate A left, bit 7 moves into the carry flag
+        JR      C,LCD_WAIT      ;Loop back if the carry flag is set
+        RET
+
 SERIAL_MESSAGE:
         DB      "HELLO WORLD!",0
+
+COMMANDS:
+    db $3f,$0f,$01,$06,$ff

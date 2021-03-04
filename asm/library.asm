@@ -13,7 +13,7 @@ stackpointer equ $8fff  ;Address for the stack pointer
 ;$06: Entry mode: left to right, no shift
 ;ff terminated.
 commands:
-    db $3f,$0f,$01,$06,$ff
+    db $37,$0f,$01,$06,$ff
 
 ;7 segment numbers,0-9:
 numbers:

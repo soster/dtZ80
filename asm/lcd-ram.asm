@@ -41,5 +41,4 @@ message_loop:           ;Loop back here for next character
 done:
     HALT
 
-INCLUDE
-    'library.asm'
+INCLUDE 'library.asm'
