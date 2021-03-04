@@ -1,0 +1,5 @@
+{
+  "editor.tabSize": 2,
+  "z80-macroasm.format.baseIndent": 1,
+  "z80-macroasm.format.uppercaseKeywords": true
+}

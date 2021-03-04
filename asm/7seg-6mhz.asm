@@ -2,69 +2,81 @@
 ;minipro -p "at28c256" -w rasmoutput.bin -s
 
 ;Constants
-ioport equ $00 ;I/O port
-n0 equ #3f
-n1 equ #6
-n2 equ #5b
-n3 equ #4f
-n4 equ #66
-n5 equ #6d
-n6 equ #7d
-n7 equ #7
-n8 equ #7f
-n9 equ #6f
+ioport
+  EQU #00 ;I/O port
+n0
+  EQU #3f
+n1
+  EQU #6
+n2
+  EQU #5b
+n3
+  EQU #4f
+n4
+  EQU #66
+n5
+  EQU #6d
+n6
+  EQU #7d
+n7
+  EQU #7
+n8
+  EQU #7f
+n9
+  EQU #6f
 
 ; macro instead of subroutine because stack is missing (no sub/ret)
 MACRO delay
-  ld e,#4
+  LD  E,#4
 @j60:
-  ld b,#40
+  LD  B,#40
 @j61:
-  ld d,#ff
+  LD  D,#ff
 @j62:
-  dec	d
-  jp	nz,@j62
-  dec b
-  jp nz,@j61
-  dec e
-  jp nz,@j60
+  DEC D
+  JP  NZ,@j62
+  DEC B
+  JP  NZ,@j61
+  DEC E
+  JP  NZ,@j60
 MEND
 
-MACRO segprint value
-  ld a,{value}
-  out (ioport),a
+MACRO segprint  value
+  LD  A,{value}
+  OUT (ioport),A
 MEND
 
-org 0
+org
+  0
 begin:
-    segprint n0
-    delay (void)
-    segprint n1
-    delay (void)
-    segprint n2
-    delay (void)
-    segprint n3
-    delay (void)
-    segprint n4
-    delay (void)
-    segprint n5
-    delay (void)
-    segprint n6
-    delay (void)
-    segprint n7
-    delay (void)
-    segprint n8
-    delay (void)
-    segprint n9
-    delay (void)
+  segprint  n0
+  delay (void)
+  segprint  n1
+  delay (void)
+  segprint  n2
+  delay (void)
+  segprint  n3
+  delay (void)
+  segprint  n4
+  delay (void)
+  segprint  n5
+  delay (void)
+  segprint  n6
+  delay (void)
+  segprint  n7
+  delay (void)
+  segprint  n8
+  delay (void)
+  segprint  n9
+  delay (void)
 
-    ld a,#ff
+  LD  A,#ff
 iterate:
-    out (ioport),a
-    delay (void)
-    dec a
-    jp nz,iterate
-    jp begin
+  OUT (ioport),A
+  delay (void)
+  DEC A
+  JP  NZ,iterate
+  JP  begin
 nop
 nop
 nop

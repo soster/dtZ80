@@ -1,63 +1,67 @@
 ;sound.z80
-;Count from 0-9 on the seven segment display
-;Depends on RAM and therefore uses call and ret
+;Example sound for the sound card
+;Needs RAM
 
 ;Constants
-data_port equ $d0
-register_port equ $d8
+data_port
+  EQU $d0
+register_port
+  EQU $d8
 
-org 0
-    call startup
-    ld hl,commands      ;Address of command list, $ff terminated
+org
+  0
+  CALL  startup
+  LD  HL,commands      ;Address of command list, $ff terminated
 
 mloop:
-    ld a,(hl)           ;Load character into A
-    and a               ;Test for end of string (A=0)
-    jr z,sound
-    ld a,b
-    call segprint_num
-    inc b
-    inc hl              ;Point to next character
-    call delay
-    jr mloop     ;Loop back for next character
+  LD  A,(HL)           ;Load character into A
+  AND A               ;Test for end of string (A=0)
+  JR  Z,sound
+  LD  A,B
+  CALL  segprint_num
+  INC B
+  INC HL              ;Point to next character
+  CALL  delay
+  JR  mloop     ;Loop back for next character
 sound:
-  ld a, 7
-  out (register_port), a ;select the mixer register
-  ld a, 62
-  out (data_port),a ; enable channel A only
-  ld a, 8
-  out (register_port),a ; channel A volume
-  ld a, 15
-  out (data_port),a ; set it to maximum
-  ld a, 0
-  out (register_port),a; select channel A pitch
+  LD  A,7
+  OUT (register_port),A ;select the mixer register
+  LD  A,62
+  OUT (data_port),A ; enable channel A only
+  LD  A,8
+  OUT (register_port),A ; channel A volume
+  LD  A,15
+  OUT (data_port),A ; set it to maximum
+  LD  A,0
+  OUT (register_port),A; select channel A pitch
 reset:
-  ld b, 255
+  LD  B,255
 loop:
-  ld a, b
-  out (data_port),a; set it
-  call pause
-  dec b
-  jp nz, loop
-  jp reset
+  LD  A,B
+  OUT (data_port),A; set it
+  CALL  pause
+  DEC B
+  JP  NZ,loop
+  JP  reset
 pause:
-  push bc
-  push de
-  push af
+  PUSH  BC
+  PUSH  DE
+  PUSH  AF
 
-  LD BC, $1500            ;Loads BC with hex 1000
+  LD  BC,$1500            ; Loads BC with hex 1000
 outer:
-  DEC BC                  ;Decrements BC
-  LD A, B                 ;Copies B into A
-  OR C                    ;Bitwise OR of C with A (now, A = B | C)
-  JP NZ, outer            ;Jumps back to Outer: label if A is not zero
+  DEC BC                  ; Decrements BC
+  LD  A,B                 ; Copies B into A
+  OR  C                   ; Bitwise OR of C with A (now, A = B | C)
+  JP  NZ,outer            ; Jumps back to Outer: label if A is not zero
 
-  pop af
-  pop de
-  pop bc
-  RET                     ;Return from call to this subroutine
+  POP AF
+  POP DE
+  POP BC
+  RET                     ; Return from call to this subroutine
 
 done:
-    halt
+  HALT
 
-INCLUDE 'library.asm'
+INCLUDE
+  'library.asm'
