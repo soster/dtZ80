@@ -66,6 +66,10 @@ Connect (/CAS0 AND /CAS1) to /OE on the SRAM and use one of them for A16 also
 Important: Clock 10.738635 Mhz, Type ‎MP107-E‎ for video timing
 
 
+### Keyboard
+* Problem with existing design: Clk and Data for PS/2 have to be pulled to ground programmatically during a longer time. Flip Flops 74273 and transistor or buffer 74125 needed?
+
+
 ## Links
 * [Bread 80](https://bread80.com/) A Z80 on breadboards
 * [RC2014](https://rc2014.co.uk/) Another Z80 project
