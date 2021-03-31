@@ -44,9 +44,14 @@ next_key:
     LD  (value),A
     LD  (keycode),A
     LD  (last_clk),A
+    LD  A,00001100b      ;DATA&CLK high allows sending data from keyboard
+    OUT (keyboard),A
+    CALL DELAY
+    LD  A,0
+    OUT (keyboard),A
 keyboard_loop:
-    ;LD  A,00001100b      ;DATA&CLK high allows sending data from keyboard
-    ;OUT (keyboard),A
+
+    CALL DELAY
     IN  A,(keyboard)
     LD  (value),A
     AND 00000010b       ;only clock bit

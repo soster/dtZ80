@@ -68,6 +68,7 @@ Important: Clock 10.738635 Mhz, Type ‎MP107-E‎ for video timing
 
 ### Keyboard
 * Problem with existing design: Clk and Data for PS/2 have to be pulled to ground programmatically during a longer time. Flip Flops 74273 and transistor or buffer 74125 needed?
+https://github.com/DerULF1/8bit-computer
 
 
 ## Links
