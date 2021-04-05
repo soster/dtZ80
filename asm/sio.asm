@@ -117,7 +117,7 @@ SET_CTC:
                             ; TO0 output frequency=INPUT CLK/time constant
                             ; which results in 7372800/24 = 307200 Hz because the CTC is set to need RX/TX
                             ; clock 16 times the requested baud rate (in our case, 19200 x 16 = 307200 Hz)
-                            ; OSZ outputs ca. 57 khz, why?
+                            ; OSZ outputs ca. 57 khz (57600), why?
 ;CTC_CH3 disabled
         LD      A,00000011b      ; interrupt off, timer mode, prescaler=16, don't care ext. TRG edge,
                             ; start timer on loading constant, no time constant follows, software reset, command word

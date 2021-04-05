@@ -4,6 +4,7 @@
 ; stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb
 ; tio --baudrate 19200 --databits 8 --flow none --stopbits 1 --parity none /dev/ttyS0
 ; This works however: tio --baudrate 3600 --databits 8 --flow none --stopbits 1  --parity none /dev/ttyUSB0
+; Max Base Frequency of the CTC seems to be 1.37 Mhz, it works if everything is calculated based on this instead of 7.3728Mhz
 
 ; CTC Addresses
 CTC_CH0 EQU     60h
@@ -43,14 +44,16 @@ RESET:
         ; Main code
         ORG     0100h           ; main code starts at $0100 because of interrupt vector!
 MAIN:
+        LD      A,$01           ; Seven segment bits for "0"
+        OUT     (SEVENSEGIO),A  ; Output to seven segment
         LD      D,0x80
         CALL    DELAY           ; little delay
 
         CALL    SET_CTC         ; configure CTC
-
         CALL    SET_SIO         ; configure SIO
 
-        LD      A,$3f           ; Seven segment bits for "0"
+
+        LD      A,$02           ; Seven segment bits for "0"
         OUT     (SEVENSEGIO),A  ; Output to seven segment
 
         LD      A,0             ; set high byte of interrupt vectors to point to page 0
@@ -66,6 +69,8 @@ MAIN:
         LD      HL,commands      ;Address of command list for LCD, $ff terminated
 
 LCD_COM_LOOP:
+        LD      A,$03           ; Seven segment bits for "0"
+        OUT     (SEVENSEGIO),A  ; Output to seven segment
         CALL    LCD_WAIT
         LD      A,(HL)           ;Next command
         INC     A               ;Add 1 so we can test for $ff...
@@ -76,15 +81,18 @@ LCD_COM_LOOP:
         INC     HL              ;Next command
         JR      LCD_COM_LOOP     ;Repeat
 LCD_COM_END:
-        LD      D,ffh
-        CALL    DELAY
-        LD      A,6h
+        LD      D,0x80
+        CALL    DELAY           ; little delay
+        LD      A,$04
         OUT     (SEVENSEGIO),A
+
+
+        
 
         
 ENDLESS_LOOP:
-        LD      D,ffh
-        CALL    DELAY
+        LD      D,0x80
+        CALL    DELAY           ; little delay
         CALL    ENDLESS_LOOP
 
 ;-------------------------------------------------
@@ -100,7 +108,8 @@ SET_CTC:
         LD      A,01000111b ; interrupt off, counter mode, prsc=16 (doesn't matter), ext. start,
                             ; start upon loading time constant, time constant follows, sw reset, command word
         OUT     (CTC_CH0),A
-        LD      A,0x48      ; time constant 24*3
+        ;LD      A,0x48      ; time constant 24*3
+        LD       A,0x04
         OUT     (CTC_CH0),A
                             ; TO0 output frequency=INPUT CLK/time constant
                             ; which results in 7372800/24 = 307200 Hz because the CTC is set to need RX/TX
@@ -126,7 +135,7 @@ SET_SIO:
         OUT     (SIO_CA),A
         LD      A,00000100b      ; write into WR0: select WR4
         OUT     (SIO_CA),A
-        LD      A,01000100b      ; write into WR4: presc. 16x, unused, unused, 1 stop bit, unused, even, no parity
+        LD      A,01000000b      ; write into WR4: presc. 16x, ", 0 stop bits, 0 stop bits, unused, even, no parity
         OUT     (SIO_CA),A
         LD      A,00000101b      ; write into WR0: select WR5
         OUT     (SIO_CA),A
@@ -144,8 +153,12 @@ SIO_A_EI:
         ;enable SIO channel A RX
         LD      A,00000011b      ; write into WR0: select WR3
         OUT     (SIO_CA),A
+        ; Receiver Enable (D0)
+        ; A 1 programmed into this bit allows receive operations to begin. Set this bit
+        ; only after all other receive parameters are set and the receiver is completely
+        ; initialized.
         LD      A,11000001b      ; 8 bits/RX char; auto enable OFF; RX enable
-        OUT     (SIO_CA),A
+        OUT     (SIO_CA),A       ; after this receiving starts immediately!
         RET
 
 
@@ -198,8 +211,8 @@ RX_CHA_AVAILABLE:
         ;OUT     (LCD_DATA),A    ; echo value to lcd
         ;CALL    TX_EMP          ; wait for outgoing char to be sent
         ;call RX_EMP            ; flush receive buffer
-        LD      A,(RAMCELL)     ; change the pattern to show to the external
-        XOR     11000000b       ; world that this ISR was honored
+        ;LD      A,(RAMCELL)     ; change the pattern to show to the external
+        ;XOR     11000000b       ; world that this ISR was honored
         LD      (RAMCELL),A
         CALL    A_RTS_ON        ; enable again RTS
         POP     AF
@@ -207,10 +220,15 @@ RX_CHA_AVAILABLE:
         RETI
 
 SPEC_RX_CONDITON:                ; error condition?
+        PUSH AF
         LD      A,$ff
         OUT     (SEVENSEGIO),A
-        CALL    DELAY
-        JP      0000h            ; if buffer overrun then restart the program
+        LD      D,0x80
+        CALL    DELAY           ; little delay
+        POP AF
+        EI
+        RETI
+        ;JP      0000h            ; if buffer overrun then restart the program
 
 TX_EMP:
         ; check for TX buffer empty

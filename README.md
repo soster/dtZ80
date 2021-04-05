@@ -57,7 +57,10 @@ It is jumpered to use this address space:
 
 
 
-## Next steps
+## Next steps / TODOs
+### CTC
+The CTC outputs a base clock of around 1,37 Mhz to the UART/SIO instead of the expected 7.3728Mhz. Use a frequency divider?
+
 ### Graphics
 Based on: TMS9918A
 Problem: Works only with DRAM for SRAM
