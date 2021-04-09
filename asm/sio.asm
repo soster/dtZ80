@@ -3,7 +3,7 @@
 ; rasm sio.asm sio && minipro -p "at28c256" -w sio.bin -s
 ; stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb
 ; tio --baudrate 19200 --databits 8 --flow none --stopbits 1 --parity none /dev/ttyS0
-; This works however: tio --baudrate 3600 --databits 8 --flow none --stopbits 1  --parity none /dev/ttyUSB0
+; Old: tio --baudrate 3600 --databits 8 --flow none --stopbits 1  --parity none /dev/ttyUSB0
 
 ; CTC Addresses
 CTC_CH0 EQU     60h
@@ -104,17 +104,20 @@ SET_CTC:
 ;init CTC_CH0
 ;Information from the datasheet:
 ;Counter Mode = Bit 6 set, otherwise Timer mode. Timer mode references the system clock, counter mode the trigger signal. 
-;For Channel 0 the trigger signal comes from a 7.3728 Mhz crystal.
+;For Channel 0 the trigger signal comes from a 7.3728 Mhz crystal. (deprecated, now use global clock)
+;ATTENTION: Trigger signal not working anymore. Therefore, we use the system clock with 7.3728 Mhz / 16 / 24 = 19.200 Hz
 ;For Timer Mode: The prescaler in Bit 5 defines if the clock is divided by 16 (0) or 256 (1).
 ;
 ;
 ;CTC_CH0 provides to SIO SERIAL A the RX/TX clock
-        LD      A,01000111b ; interrupt off, counter mode, prsc=16 (doesn't matter), ext. start,
-                            ; start upon loading time constant, time constant follows, sw reset, command word
+        LD      A,00000111b ; interrupt off, timer mode, prsc=16, ext. start,
+                            ; start upon loading time constant, time constant, sw reset, command word
+                            ; divides clock by 16
         OUT     (CTC_CH0),A
-        LD      A,0x18      ; time constant 24
+        LD      A,0x18      ; time constant 24, divides further by 24 = 19.200 Baud / Hz
         OUT     (CTC_CH0),A
                             ; TO0 output frequency=INPUT CLK/time constant
+                            ; Old:
                             ; which results in 7372800/24 = 307200 Hz because the CTC is set to need RX/TX
                             ; clock 16 times the requested baud rate (in our case, 19200 x 16 = 307200 Hz)
                             ; OSZ outputs ca. 57 khz (57600), why?
@@ -157,7 +160,7 @@ SET_SIO:
         OUT     (SIO_CA),A
         LD      A,00000100b      ; write into WR0: select WR4
         OUT     (SIO_CA),A
-        LD      A,01000100b      ; write into WR4: presc. 16x, 1 stop bit, no parity
+        LD      A,00000100b      ; write into WR4: presc. 1x, 1 stop bit, no parity
         OUT     (SIO_CA),A
         LD      A,00000101b      ; write into WR0: select WR5
         OUT     (SIO_CA),A
