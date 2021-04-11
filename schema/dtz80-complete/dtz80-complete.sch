@@ -1196,8 +1196,6 @@ F 3 "~" H 10200 2350 50  0001 C CNN
 	1    10200 2350
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	10000 2350 10000 2200
 $Comp
 L power:+5V #PWR025
 U 1 1 6000E4AC
@@ -1380,7 +1378,6 @@ Text Label 8900 5150 0    50   ~ 0
 A0
 Text Label 8900 5050 0    50   ~ 0
 A1
-NoConn ~ 10050 2050
 Text Label 12300 2950 0    50   ~ 0
 D0
 Text Label 12300 3050 0    50   ~ 0
@@ -2588,4 +2585,177 @@ Wire Wire Line
 	7400 4250 7050 4250
 Text Label 7200 4250 0    50   ~ 0
 VCC
+$Comp
+L Timer:NE555P U?
+U 1 1 607E50E5
+P 11750 1150
+F 0 "U?" H 11750 1731 50  0000 C CNN
+F 1 "NE555P" H 11750 1640 50  0000 C CNN
+F 2 "Package_DIP:DIP-8_W7.62mm" H 12400 750 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/ne555.pdf" H 12600 750 50  0001 C CNN
+	1    11750 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 607EA290
+P 11750 150
+F 0 "#PWR?" H 11750 0   50  0001 C CNN
+F 1 "+5V" H 11765 323 50  0000 C CNN
+F 2 "" H 11750 150 50  0001 C CNN
+F 3 "" H 11750 150 50  0001 C CNN
+	1    11750 150 
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 607EA9EB
+P 11750 1950
+F 0 "#PWR?" H 11750 1700 50  0001 C CNN
+F 1 "GND" H 11755 1777 50  0000 C CNN
+F 2 "" H 11750 1950 50  0001 C CNN
+F 3 "" H 11750 1950 50  0001 C CNN
+	1    11750 1950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 607EB630
+P 10600 1300
+F 0 "C?" H 10715 1346 50  0000 L CNN
+F 1 "100nF" H 10715 1255 50  0000 L CNN
+F 2 "" H 10638 1150 50  0001 C CNN
+F 3 "~" H 10600 1300 50  0001 C CNN
+	1    10600 1300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 607EC0A9
+P 11350 1750
+F 0 "C?" H 11465 1796 50  0000 L CNN
+F 1 "10nF" H 11465 1705 50  0000 L CNN
+F 2 "" H 11388 1600 50  0001 C CNN
+F 3 "~" H 11350 1750 50  0001 C CNN
+	1    11350 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Switch:SW_MEC_5G SW?
+U 1 1 607EDE72
+P 10300 950
+F 0 "SW?" H 10300 1235 50  0000 C CNN
+F 1 "Reset" H 10300 1144 50  0000 C CNN
+F 2 "" H 10300 1150 50  0001 C CNN
+F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=488" H 10300 1150 50  0001 C CNN
+	1    10300 950 
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP C?
+U 1 1 607EEEB1
+P 12550 1600
+F 0 "C?" H 12433 1554 50  0000 R CNN
+F 1 "10uF" H 12433 1645 50  0000 R CNN
+F 2 "" H 12588 1450 50  0001 C CNN
+F 3 "~" H 12550 1600 50  0001 C CNN
+	1    12550 1600
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	11750 1550 11750 1950
+Wire Wire Line
+	12550 1750 12550 1950
+Wire Wire Line
+	12550 1950 11750 1950
+Connection ~ 11750 1950
+Wire Wire Line
+	12550 1450 12550 1350
+Wire Wire Line
+	12550 1350 12250 1350
+Wire Wire Line
+	12550 1350 12550 1150
+Wire Wire Line
+	12550 1150 12250 1150
+Connection ~ 12550 1350
+Wire Wire Line
+	12550 1150 12550 650 
+Connection ~ 12550 1150
+$Comp
+L Device:R R?
+U 1 1 60938BA3
+P 12550 500
+F 0 "R?" H 12620 546 50  0000 L CNN
+F 1 "47K" H 12620 455 50  0000 L CNN
+F 2 "" V 12480 500 50  0001 C CNN
+F 3 "~" H 12550 500 50  0001 C CNN
+	1    12550 500 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12550 350  12550 150 
+Wire Wire Line
+	12550 150  11750 150 
+Wire Wire Line
+	12250 950  12800 950 
+Wire Wire Line
+	11250 950  10600 950 
+Wire Wire Line
+	10100 950  10100 1650
+Wire Wire Line
+	10100 1650 10600 1650
+Wire Wire Line
+	11150 1650 11150 1950
+Wire Wire Line
+	11150 1950 11350 1950
+Wire Wire Line
+	11250 1150 11100 1150
+Wire Wire Line
+	11100 1150 11100 1600
+Wire Wire Line
+	11100 1600 11350 1600
+Wire Wire Line
+	11350 1900 11350 1950
+Connection ~ 11350 1950
+Wire Wire Line
+	11350 1950 11750 1950
+Wire Wire Line
+	11750 150  11000 150 
+Wire Wire Line
+	10600 150  10600 400 
+Connection ~ 11750 150 
+$Comp
+L Device:R R?
+U 1 1 60A8A53F
+P 10600 550
+F 0 "R?" H 10670 596 50  0000 L CNN
+F 1 "1M" H 10670 505 50  0000 L CNN
+F 2 "" V 10530 550 50  0001 C CNN
+F 3 "~" H 10600 550 50  0001 C CNN
+	1    10600 550 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10600 700  10600 950 
+Connection ~ 10600 950 
+Wire Wire Line
+	10600 950  10500 950 
+Wire Wire Line
+	10600 950  10600 1150
+Wire Wire Line
+	10600 1450 10600 1650
+Connection ~ 10600 1650
+Wire Wire Line
+	10600 1650 11150 1650
+Wire Wire Line
+	11250 1350 11000 1350
+Wire Wire Line
+	11000 1350 11000 150 
+Connection ~ 11000 150 
+Wire Wire Line
+	11000 150  10600 150 
+Wire Wire Line
+	10000 2200 10000 2350
+Text Label 12700 950  0    50   ~ 0
+TODO_INVERT_RESET
 $EndSCHEMATC
