@@ -67,6 +67,11 @@ Problem: Works only with DRAM for SRAM
 Looks like you will need to latch the address bits 8-15 when RAS goes low
 Connect (/CAS0 AND /CAS1) to /OE on the SRAM and use one of them for A16 also
 Important: Clock 10.738635 Mhz, Type ‎MP107-E‎ for video timing
+Use schematics from: https://github.com/jblang/TMS9918A
+
+### LCD
+TODO: Avoid directly connecting the LCD to the CPU Bus! Example for 4 bit mode:
+https://smallcomputercentral.wordpress.com/example-alphanumeric-lcd/
 
 
 ### Keyboard
