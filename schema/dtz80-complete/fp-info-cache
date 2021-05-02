@@ -1,4 +1,4 @@
-19082527419898368
+19215418012032747
 7seg
 7SegmentLED_LTS6760_LTS6780
 7-Segment Display, LTS67x0, http://optoelectronics.liteon.com/upload/download/DS30-2001-355/S6760jd.pdf
@@ -6,6 +6,13 @@
 0
 10
 10
+7seg
+DIP-28_W15.24mm_Socket_Large_Holes
+28-lead though-hole mounted DIP package, row spacing 15.24 mm (600 mils), Socket
+THT DIP DIL PDIP 2.54mm 15.24mm 600mil Socket
+0
+28
+28
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -83033,3 +83040,24 @@ varistor SIOV
 0
 2
 2
+dtz80
+7SegmentLED_LTS6760_LTS6780
+7-Segment Display, LTS67x0, http://optoelectronics.liteon.com/upload/download/DS30-2001-355/S6760jd.pdf
+7Segment LED LTS6760 LTS6780
+0
+10
+10
+dtz80
+DIP-28_W15.24mm_Socket_Large_Holes
+28-lead though-hole mounted DIP package, row spacing 15.24 mm (600 mils), Socket
+THT DIP DIL PDIP 2.54mm 15.24mm 600mil Socket
+0
+28
+28
+dtz80
+Tayda_3.5mm_stereo_TRS_jack_A-853
+
+
+0
+5
+5

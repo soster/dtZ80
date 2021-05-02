@@ -2,4 +2,5 @@
   (lib (name rc2014bus)(type Legacy)(uri /home/oster/git/dtZ80/schema/rc2014bus.lib)(options "")(descr ""))
   (lib (name Z80SIO)(type Legacy)(uri /home/oster/git/dtZ80/schema/dtZ80-simple-io/Z80SIO.lib)(options "")(descr ""))
   (lib (name Z80CTC)(type Legacy)(uri /home/oster/git/dtZ80/schema/dtZ80-simple-io/Z80CTC.lib)(options "")(descr ""))
+  (lib (name dtZ80)(type Legacy)(uri /home/oster/git/dtZ80/schema/dtZ80-main/dtZ80.lib)(options "")(descr ""))
 )

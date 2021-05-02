@@ -1,0 +1,15 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 5161AS
+D One digit 7 segment red, common cathode
+K display LED 7-segment
+F https://docs.broadcom.com/docs/AV02-2553EN
+$ENDCMP
+#
+$CMP HDSP-7503
+D One digit 7 segment high efficiency red, common cathode
+K display LED 7-segment
+F https://docs.broadcom.com/docs/AV02-2553EN
+$ENDCMP
+#
+#End Doc Library

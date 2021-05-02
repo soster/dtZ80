@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name dtZ80-complete)(type KiCad)(uri /home/oster/git/dtZ80/schema/dtz80-complete)(options "")(descr ""))
+  (lib (name schema)(type KiCad)(uri /home/oster/git/dtZ80/schema.pretty)(options "")(descr ""))
+  (lib (name dtz80)(type KiCad)(uri /home/oster/git/dtZ80/schema/dtz80.pretty)(options "")(descr ""))
+)
