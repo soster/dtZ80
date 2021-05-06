@@ -45,8 +45,6 @@ Text Label 1250 2500 0    50   ~ 0
 A5
 Text Label 1250 2700 0    50   ~ 0
 A3
-Text Label 1250 2800 0    50   ~ 0
-A2
 Text Label 1250 3200 0    50   ~ 0
 Vcc
 Text Label 1250 3100 0    50   ~ 0
@@ -169,9 +167,6 @@ NoConn ~ 1250 5100
 NoConn ~ 1250 5000
 NoConn ~ 1250 4900
 NoConn ~ 1250 2700
-NoConn ~ 1250 2800
-NoConn ~ 1250 2900
-NoConn ~ 1250 3000
 NoConn ~ 1250 5200
 NoConn ~ 1250 5300
 Wire Wire Line
@@ -1714,4 +1709,14 @@ Wire Wire Line
 	10750 2000 11000 2000
 Wire Wire Line
 	11000 2000 11000 1800
+Wire Wire Line
+	1250 2900 1350 2900
+Wire Wire Line
+	1250 3000 1350 3000
+Text Label 1250 2900 0    50   ~ 0
+A1
+Text Label 1250 3000 0    50   ~ 0
+A0
+Text Label 1250 2800 0    50   ~ 0
+A2
 $EndSCHEMATC

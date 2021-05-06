@@ -513,7 +513,7 @@ F 3 "" H 9200 3550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L rc2014bus:RC2014Bus J1
+L dtZ80-memory-rescue:RC2014Bus-rc2014bus J1
 U 1 1 60225818
 P 6000 6100
 F 0 "J1" V 6363 6055 50  0000 C CNN

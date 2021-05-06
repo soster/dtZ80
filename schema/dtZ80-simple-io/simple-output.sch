@@ -774,7 +774,7 @@ Text Label 3150 2450 0    50   ~ 0
 Text Label 4650 2450 0    50   ~ 0
 ~Y2~
 $Comp
-L 7seg:5161AS U5
+L simple-output-rescue:5161AS-7seg U5
 U 1 1 603C9B68
 P 4100 4300
 F 0 "U5" H 4100 4967 50  0000 C CNN

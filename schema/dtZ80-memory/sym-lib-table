@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name dk_Rectangular-Connectors-Headers-Male-Pins)(type Legacy)(uri /home/oster/git/digikey-kicad-library/digikey-symbols/dk_Rectangular-Connectors-Headers-Male-Pins.lib)(options "")(descr ""))
-  (lib (name rc2014bus)(type Legacy)(uri /home/oster/git/dtZ80/schema/rc2014bus.lib)(options "")(descr ""))
+  (lib (name rc2014bus)(type Legacy)(uri ${KIPRJMOD}/../common/rc2014bus.lib)(options "")(descr ""))
+  (lib (name dtZ80-memory-rescue)(type Legacy)(uri ${KIPRJMOD}/dtZ80-memory-rescue.lib)(options "")(descr ""))
 )

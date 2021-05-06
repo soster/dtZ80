@@ -3900,8 +3900,6 @@ F 3 "~" H 6900 6650 50  0001 C CNN
 	1    6900 6650
 	0    1    1    0   
 $EndComp
-Text Notes 8350 8350 0    50   ~ 0
-A0 does not conflict with Y0?
 Wire Wire Line
 	5450 6950 5450 7150
 Text Label 6450 5950 0    50   ~ 0
