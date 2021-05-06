@@ -53,7 +53,7 @@ Text Label 3750 7900 0    50   ~ 0
 A14
 Text Label 3750 8000 0    50   ~ 0
 A15
-Text Label 2500 5000 0    50   ~ 0
+Text Label 1950 5400 0    50   ~ 0
 A15
 Wire Wire Line
 	2450 4600 2750 4600
@@ -730,7 +730,7 @@ Wire Wire Line
 Wire Wire Line
 	2750 4500 2500 4500
 Wire Wire Line
-	2500 5000 2750 5000
+	1950 5400 2200 5400
 Wire Wire Line
 	3050 9200 3050 9350
 Wire Wire Line
@@ -3985,10 +3985,6 @@ Text Label 11100 10300 3    50   ~ 0
 RXA
 Text Label 11200 10300 3    50   ~ 0
 TXA
-Text Label 12150 900  1    50   ~ 0
-RXA
-Text Label 12150 1550 1    50   ~ 0
-TXA
 Text Label 11500 10300 3    50   ~ 0
 ~Y7~
 Text Label 12350 900  1    50   ~ 0
@@ -4200,4 +4196,62 @@ F 3 "https://docs.broadcom.com/docs/AV02-2553EN" H 6950 6800 50  0001 C CNN
 	1    7350 6250
 	1    0    0    -1  
 $EndComp
+NoConn ~ 12150 700 
+NoConn ~ 12150 1600
+$Comp
+L Jumper:Jumper_2_Open JP10
+U 1 1 609A9B49
+P 2400 5400
+F 0 "JP10" H 2400 5635 50  0000 C CNN
+F 1 "ROM On" H 2400 5544 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2400 5400 50  0001 C CNN
+F 3 "~" H 2400 5400 50  0001 C CNN
+	1    2400 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Jumper:Jumper_2_Open JP11
+U 1 1 60AC66EE
+P 2400 5600
+F 0 "JP11" H 2400 5835 50  0000 C CNN
+F 1 "ROM Off" H 2400 5450 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2400 5600 50  0001 C CNN
+F 3 "~" H 2400 5600 50  0001 C CNN
+	1    2400 5600
+	1    0    0    -1  
+$EndComp
+Connection ~ 2600 5400
+Wire Wire Line
+	2600 5400 2600 5600
+Wire Wire Line
+	2200 5600 1950 5600
+$Comp
+L Device:R R34
+U 1 1 60C6BA80
+P 1800 5600
+F 0 "R34" H 1870 5646 50  0000 L CNN
+F 1 "10k" H 1870 5555 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 1730 5600 50  0001 C CNN
+F 3 "~" H 1800 5600 50  0001 C CNN
+	1    1800 5600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1650 5600 1450 5600
+$Comp
+L power:+5V #PWR0114
+U 1 1 60C6CEB9
+P 1450 5600
+F 0 "#PWR0114" H 1450 5450 50  0001 C CNN
+F 1 "+5V" H 1465 5773 50  0000 C CNN
+F 2 "" H 1450 5600 50  0001 C CNN
+F 3 "" H 1450 5600 50  0001 C CNN
+	1    1450 5600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2750 5000 2600 5000
+Wire Wire Line
+	2600 5000 2600 5400
+NoConn ~ 15350 13950
 $EndSCHEMATC
