@@ -1,12 +1,13 @@
 ;sound.z80
 ;Example sound for the sound card
 ;Needs RAM
+; rasm sound-complete.asm sound-complete && minipro -p "at28c256" -w sound-complete.bin -s
 
 ;Constants
 data_port
-  EQU $d0
+  EQU $80
 register_port
-  EQU $d8
+  EQU $84
 
 org
   0

@@ -1768,7 +1768,6 @@ MDLADDR
 ;tables realy used only for modules of 3.3 and older versions.
 
 
-INCLUDE
-	'library_sound.asm'
+INCLUDE	'library_sound.asm'
 RAM_END
 	EQU	$ ;end address to copy into ram
