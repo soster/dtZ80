@@ -63,9 +63,13 @@ segprint_num:;interpret a as a number 0-9 and translate it to the 7seg byte
     pop af      ;restore af
     ret
 
-lcd_wait_loop:;wait until lcd is ready
-    in a,(lcd_command)      ;Read the status into A
-    ;trick to conditionally jump if bit 7 is true:
-    rlca                    ;Rotate A left, bit 7 moves into the carry flag
-    jr c,lcd_wait_loop      ;Loop back if the carry flag is set
+LCD_WAIT:
+    push af   ; save registers
+    ld a,$ff  ; count down from ff
+lcd_wait_loop:
+    nop       ; just to wait a little longer
+    dec a     ; decrement...
+    jp nz,lcd_wait_loop; jump if 0
+    OUT (sevensegio),a; reset a0-an and do0-do8
+    pop af; restore register
     ret
