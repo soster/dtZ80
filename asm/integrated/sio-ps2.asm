@@ -20,20 +20,25 @@ SIO_DB  EQU     41h; Not used
 SEVENSEGIO
         EQU     0x00; 7 segment base address
 
-LCD_COMMAND equ $04	    ;LCD command I/O port, A5=1
-LCD_DATA equ $05        ;LCD data I/O port,A5=1,A0=1
+LCD_COMMAND
+        EQU     $04	    ;LCD command I/O port, A5=1
+LCD_DATA
+        EQU     $05        ;LCD data I/O port,A5=1,A0=1
 
 RAMCELL EQU     0x8000
 
-CR       EQU     0
-L_SHIFT  EQU     0
-R_SHIFT  EQU     0
-CAPS_LOCK EQU     0
-NUM_LOCK EQU     0
-BACK_SPACE EQU     0x08
-ESC      EQU     0
-L_CTRL   EQU     0
-SPACE    EQU    0x20
+CR      EQU     0
+L_SHIFT EQU     0
+R_SHIFT EQU     0
+CAPS_LOCK
+        EQU     0
+NUM_LOCK
+        EQU     0
+BACK_SPACE
+        EQU     0x08
+ESC     EQU     0
+L_CTRL  EQU     0
+SPACE   EQU     0x20
 
 RESET:
         ORG     0
@@ -92,21 +97,21 @@ LCD_COM_END:
         LD      A,$5b
         OUT     (SEVENSEGIO),A
 
-        LD  HL,START_MESSAGE       ;Message address, 0 terminated
-        LD  B,0
+        LD      HL,START_MESSAGE       ;Message address, 0 terminated
+        LD      B,0
 message_loop:           ;Loop back here for next character
-        LD  A,(HL)           ;Load character into A
-        AND A               ;Test for end of string (A=0)
-        JR  Z,ENDLESS_LOOP
-        OUT (lcd_data),A    ;Output the character
-        CALL LCD_WAIT
-        LD  A,B
-        INC B
-        INC HL              ;Point to next character
-        JR  message_loop     ;Loop back for next character
+        LD      A,(HL)           ;Load character into A
+        AND     A               ;Test for end of string (A=0)
+        JR      Z,ENDLESS_LOOP
+        OUT     (lcd_data),A    ;Output the character
+        CALL    LCD_WAIT
+        LD      A,B
+        INC     B
+        INC     HL              ;Point to next character
+        JR      message_loop     ;Loop back for next character
 
 
-        
+
 ENDLESS_LOOP:
         LD      D,ffh
         CALL    DELAY
@@ -191,7 +196,7 @@ SET_SIO:
                                 ; (see datasheet): in our example, 0x0C for Ch.A receiving a char, 0x0E
                                 ; for special conditions
         OUT     (SIO_CB),A
-        
+
         ; the following are settings for channel A
         LD      A,01h            ; write into WR0: select WR1
         OUT     (SIO_CA),A
@@ -252,11 +257,11 @@ RX_CHA_AVAILABLE:
         CALL    A_RTS_OFF       ; disable RTS
         IN      A,(SIO_DA)      ; read RX character into A
 
-        LD  HL, SCAN_LOOKUP     ; fetch scancode from lookup table
-        LD  B, 0
-        LD  C, A
-        ADC HL, BC
-        LD A,(HL)
+        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
+        LD      B,0
+        LD      C,A
+        ADC     HL,BC
+        LD      A,(HL)
 
 
         OUT     (SIO_DA),A      ; echo char to transmitter
@@ -298,25 +303,25 @@ RX_EMP:
         JP      RX_EMP
 
 LCD_WAIT:
-    push af
-    ld a,$ff
-lcd_wait_loop:
-    nop
-    dec a
-    jp nz,lcd_wait_loop
-    OUT (sevensegio),a
-    pop af
-    ret
+        PUSH    AF
+        LD      A,$ff
+lcd_wait_loop2:
+        NOP
+        DEC     A
+        JP      NZ,lcd_wait_loop2
+        OUT     (sevensegio),A
+        POP     AF
+        RET
 
 
 SERIAL_MESSAGE:
         DB      "HELLO WORLD!",0
 
 START_MESSAGE:
-    db "Initializing...",0
+        DB      "Initializing...",0
 
 COMMANDS:
-    db $3f,$0f,$01,$06,$ff
+        DB      $3f,$0f,$01,$06,$ff
 
 SCAN_LOOKUP:
         DB      0       ;FOR SCAN-CODE 0 WHICH DOES NOT EXIST, I

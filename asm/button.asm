@@ -47,11 +47,11 @@ MEND
 
 ;MACRO because we can't use call/ret
 MACRO lcd_wait
-@lcd_wait_loop:	 ;label with @ changes for each macro occurance
+@lcd_wait_loop2:	 ;label with @ changes for each macro occurance
     in a,(lcd_command)  ;Read the status into A
     			 ;trick to conditionally jump if bit 7 is true:
     rlca                ;Rotate A left, bit 7 moves into the carry flag
-    jr c,@lcd_wait_loop ;Loop back if the carry flag is set
+    jr c,@lcd_wait_loop2 ;Loop back if the carry flag is set
 MEND
 
 org 0

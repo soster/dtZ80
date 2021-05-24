@@ -83,11 +83,11 @@ delay:; 3 cascaded 8 bit loops to create some 100ms delay
   CALL  delay
   RET
   lcd_wait
-  lcd_wait_loop
+  lcd_wait_loop2
   IN  A,(lcd_command)  ;Read the status into A
                        ;trick to conditionally jump if bit 7 is true:
   RLCA                 ;Rotate A left, bit 7 moves into the carry flag
-  JR  C,lcd_wait_loop  ;Loop back if the carry flag is set
+  JR  C,lcd_wait_loop2  ;Loop back if the carry flag is set
   RET
 
 ;Startup command sequence for the lcd:

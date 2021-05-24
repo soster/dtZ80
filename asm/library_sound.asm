@@ -86,9 +86,9 @@ segprint_num:;interpret a as a number 0-9 and translate it to the 7seg byte
   POP AF      ;restore af
   RET
 
-lcd_wait_loop:;wait until lcd is ready
+lcd_wait_loop2:;wait until lcd is ready
   IN  A,(lcd_command)      ;Read the status into A
     ;trick to conditionally jump if bit 7 is true:
   RLCA                    ;Rotate A left, bit 7 moves into the carry flag
-  JR  C,lcd_wait_loop      ;Loop back if the carry flag is set
+  JR  C,lcd_wait_loop2      ;Loop back if the carry flag is set
   RET

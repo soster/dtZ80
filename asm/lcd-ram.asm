@@ -11,7 +11,7 @@ org 0
     LD  HL,commands      ;Address of command list, $ff terminated
 
 command_loop:
-    CALL    lcd_wait_loop  ;wait for display to be ready
+    CALL    lcd_wait_loop2  ;wait for display to be ready
     LD  A,(HL)           ;Next command
     INC A               ;Add 1 so we can test for $ff...
     JR  Z,command_end    ;...by testing for zero
@@ -24,7 +24,7 @@ command_end:
     LD  HL,MESSAGE       ;Message address, 0 terminated
     LD  B,0
 message_loop:           ;Loop back here for next character
-    CALL    lcd_wait_loop  ;wait for lcd
+    CALL    lcd_wait_loop2  ;wait for lcd
 
     LD  A,(HL)           ;Load character into A
     AND A               ;Test for end of string (A=0)
