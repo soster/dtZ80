@@ -17,11 +17,7 @@ The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.
 
 ## Images
 
-![dtZ80](/images/dtZ80.jpg)
-![CPU Card](/images/cpu-board.jpg)
-
-
-
+![dtZ80 Black Edition](/images/dtZ80-Black_Edition.jpg)
 
 
 ### IO Board
@@ -34,6 +30,7 @@ The 74LS138 determines the address space:
     0x40 = SIO
     0x60 = CTC
     0x80 = PS/2 Keyboard Connector
+
 
 #### Parallel Interface
 The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an error while designing the pcb, it has the following pins (GND=Pin 1):
@@ -57,7 +54,11 @@ It is jumpered to use this address space:
 
 
 
+
 ## Next steps / TODOs
+
+Document the new, integrated "Black Edition"!
+
 ### CTC
 The CTC outputs a base clock of around 1,37 Mhz to the UART/SIO instead of the expected 7.3728Mhz. Use a frequency divider?
 
@@ -84,3 +85,7 @@ https://github.com/DerULF1/8bit-computer
 * [RC2014](https://rc2014.co.uk/) Another Z80 project
 * [LM80C Color Computer](https://hackaday.io/project/165246-lm80c-color-computer) Another Z80 Computer, interesting because of graphics output
 * [Z80 Assembler for dummies](https://www.msx.org/wiki/Z80_Assembler_for_Dummies) Z80 Assembler Guide
+
+## More images
+![dtZ80](/images/dtZ80.jpg)
+![CPU Card](/images/cpu-board.jpg)
