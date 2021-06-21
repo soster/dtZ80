@@ -22,14 +22,18 @@ The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.
 
 ### IO Board
 
-#### Address Space
+#### Address Space for the Simple IO Board
 The 74LS138 determines the address space:
 
     0x00 = 7 Segment display
     0x20 = Parallel Port (LCD Display)
-    0x40 = SIO
+    0x40 = SIO (PS/2 via Serial)
     0x60 = CTC
-    0x80 = PS/2 Keyboard Connector
+
+#### Address Space for the new Black Edition
+    0x00 = 7 Segment Display and LCDisplay
+    0x40 = SIO
+
 
 
 #### Parallel Interface
@@ -59,8 +63,6 @@ It is jumpered to use this address space:
 
 Document the new, integrated "Black Edition"!
 
-### CTC
-The CTC outputs a base clock of around 1,37 Mhz to the UART/SIO instead of the expected 7.3728Mhz. Use a frequency divider?
 
 ### Graphics
 Based on: TMS9918A
@@ -70,14 +72,7 @@ Connect (/CAS0 AND /CAS1) to /OE on the SRAM and use one of them for A16 also
 Important: Clock 10.738635 Mhz, Type ‎MP107-E‎ for video timing
 Use schematics from: https://github.com/jblang/TMS9918A
 
-### LCD
-TODO: Avoid directly connecting the LCD to the CPU Bus! Example for 4 bit mode:
-https://smallcomputercentral.wordpress.com/example-alphanumeric-lcd/
 
-
-### Keyboard
-* Problem with existing design: Clk and Data for PS/2 have to be pulled to ground programmatically during a longer time. Flip Flops 74273 and transistor or buffer 74125 needed?
-https://github.com/DerULF1/8bit-computer
 
 
 ## Links

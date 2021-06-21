@@ -2,14 +2,18 @@
 ;(c)2004-2007 S.V.Bulba <vorobey@mail.khstu.ru>
 ;http://bulba.untergrund.net (http://bulba.at.kz)
 ;adopted by Stefan Ostermann for the dtZ80 and rasm
+;rasm player.asm player && minipro -p "at28c256" -w player.bin -s
 
 ;Only works if copied into RAM:
 RAM_DEST
 	EQU	$8000
 
 stackpointer2
-	EQU	$cfff  ;Address for the dtZ80 stack pointer
+	EQU	$fffe  ;Address for the dtZ80 stack pointer
 
+RAMCELL EQU     0xf000
+
+RESET_SONG EQU 0xf002; if not 0, then start new song
 
 
 ;Conditional assembly
@@ -48,15 +52,84 @@ LoopChecker = 0
 ;playing
 
 
+RESET:
+  ORG     0
+  JP      MAIN
 
-	ORG	#0000
+   ; interrupt vector for SIO
+   ORG     0ch
+   DEFW    RX_CHA_AVAILABLE
+   ORG     0Eh
+   DEFW    SPEC_RX_CONDITON
+
+
+  ORG     0100h           ; main code starts at $0100 because of interrupt vector!
+MAIN:
+  LD	SP,stackpointer2
+	CALL    SET_CTC         ; configure CTC
+  CALL    SET_SIO         ; configure SIO
+  LD      A,0             ; set high byte of interrupt vectors to point to page 0
+  LD      I,A
+
+  IM      2               ; set int mode 2
+  EI                      ; enable interupts
+
+  LD      A,00000000b     ; load initial value into RAM
+  LD      (RAMCELL),A
+	LD      (RESET_SONG),A
+
+  CALL    A_RTS_OFF        ; remove RTS
+	LD	A,0              ;Offset for the number to display
+	CALL	segprint_num   ;Display number stored in a
+	CALL	delay
+	CALL BOOTSTRAP
+	
+
+INCLUDE	'dtz80-lib.inc'
+INCLUDE 'sio-ctc-init.inc'
+
+RX_CHA_AVAILABLE:
+        PUSH    AF              ; backup AF
+				PUSH    HL
+        IN      A,(SIO_DA)      ; read RX character into A
+
+        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
+        LD      B,0
+        LD      C,A
+        ADC     HL,BC
+        LD      A,(HL)
+
+        OUT     (SIO_DA),A      ; echo char to transmitter
+        OUT     (LCD_DATA),A    ; echo value to lcd
+        OUT     (SEVENSEGO),A  ; echo value to 7seg
+
+				LD  (RESET_SONG),A
+
+        CALL    TX_EMP          ; wait for outgoing char to be sent
+        LD      A,(RAMCELL)     ; change the pattern to show to the external
+        XOR     11000000b       ; world that this ISR was honored
+        LD      (RAMCELL),A
+        POP			HL
+				POP     AF
+        EI
+        RETI
+
+CONTINUE_ISR:
+
+
+BOOTSTRAP:
   ;copy into RAM:
-	LD	SP,stackpointer2
 	LD	HL,BOOTSTRAP_END ;Code to be moved
 	LD	DE,RAM_DEST ;Destination address
-	LD	BC,20000;guess how much bytes to copy
+	LD	BC,28000;guess how much bytes to copy
 	LDIR                ;Copy
-	JP	#8000
+	JP	#8000; JP to RAM where the program has been copied to
+
+
+
+; -------------------
+; Player Code copied in RAM:
+; -------------------
 BOOTSTRAP_END:
 ORG
 	#8000,BOOTSTRAP_END
@@ -66,16 +139,16 @@ START_RAM:
 	LD	(ram_counter),A
 	LD	A,1              ;Offset for the number to display
 	CALL	segprint_num   ;Display number stored in a
-	CALL	delay2
+	CALL	delay
 	LD	A,2
 	CALL	segprint_num
-	CALL	delay2
+	CALL	delay
 	CALL	inc_ram_counter
 	CALL	ram_counter_segprint
-	CALL	delay2
+	CALL	delay
 	CALL	inc_ram_counter
 	CALL	ram_counter_segprint
-	CALL	delay2
+	CALL	delay
 	CALL	start
 
 	CALL LCD_PREPARE
@@ -89,7 +162,8 @@ START_RAM:
 	;LD A,2 ;PT2,ABC,Looped
 	LD	A,0
 	LD	(START+10),A
-	CALL	START
+	LD HL,SONG
+	CALL	STARTHL
 	; ld hl, startupstr
 	; call print
 ;	EI
@@ -137,7 +211,8 @@ EnvTp
 ;START+11 current position value (byte) (optional)
 
 START
-	LD	HL,MDLADDR
+	LD	HL,SONG
+STARTHL
 	JR	INIT
 	JP	PLAY
 	JR	MUTE
@@ -181,7 +256,7 @@ INIT
 ;HL - AddressOfModule
 	CALL	inc_ram_counter
 	CALL	ram_counter_segprint
-	CALL	delay2
+	CALL	delay
 	LD	A,(START+10)
 	AND	2
 	JR	NZ,INITPT2
@@ -191,7 +266,7 @@ INIT
 	LD	DE,100
 	ADD	HL,DE
 	LD	A,(HL)
-	LD	(Delay),A
+	LD	(Delay_),A
 	PUSH	HL
 	POP	IX
 	ADD	HL,DE
@@ -249,7 +324,7 @@ L21
 
 INITPT2
 	LD	A,(HL)
-	LD	(Delay),A
+	LD	(Delay_),A
 	PUSH	HL
 	PUSH	HL
 	PUSH	HL
@@ -951,7 +1026,7 @@ C_ENGLS
 C_DELAY
 	LD	A,(BC)
 	INC	BC
-	LD	(Delay),A
+	LD	(Delay_),A
 	RET
 
 SETENV
@@ -1344,8 +1419,9 @@ PSP_
 	LD	SP,#3131
 PL1A
 	LD	IX,ChanA+12
-	CALL	inc_ram_counter
-	CALL	ram_counter_segprint
+
+
+
 	CALL	PTDECOD
 	LD	(AdInPtA),BC
 
@@ -1371,7 +1447,7 @@ AdInPtC
 	CALL	PTDECOD
 	LD	(AdInPtC),BC
 
-Delay
+Delay_
 	EQU	$+1
 PL1D
 	LD	A,#3E
@@ -1444,11 +1520,26 @@ LOUT
 	OUT	(C),A
 	LD	A,(HL)
 	AND	A
-
 	RET	M
 	LD	C,SOUND_DATA
 	OUT	(C),A
-	RET
+	; --- xxx Visualization ---
+	CALL	inc_ram_counter
+	CALL	ram_counter_segprint
+  PUSH  AF     ;save af
+  LD  A,(RESET_SONG)
+	AND A; if value not 0 switch to different song!
+	JR Z,CONT_INT	
+	LD A,0
+	LD  (RESET_SONG),A
+	POP AF
+	LD HL,song2
+	JP STARTHL
+ 
+CONT_INT:
+	POP AF
+  ; ---
+RET
 
 NT_DATA
 	DB	(T_NEW_0-T1_)*2
@@ -1717,7 +1808,7 @@ outer
 	POP	BC
 	RET                     ;Return from call to this subroutine
 
-MDLADDR
+SONG
 	EQU	$
 ;incbin "tunes/through_yeovil.pt3"
 ;incbin "tunes/altitude.pt3"
@@ -1727,6 +1818,10 @@ MDLADDR
 ;incbin "tunes/luchibobra_-_three_bad_mice.pt3"
 	;incbin "tunes/MmcM_-_Agressive_Attack.pt3"
 	INCBIN	"../tunes/Davos_-_To_star.pt3"
+SONG2 EQU $
+	INCBIN  "../tunes/MmcM_-_Summer_of_Rain.pt3"
+SONG3 EQU $
+	INCBIN  "../tunes/altitude.pt3"
 ;Release 0 steps:
 ;02/27/2005
 ;Merging PT2 and PT3 players; debug
@@ -1771,6 +1866,6 @@ MDLADDR
 ;tables realy used only for modules of 3.3 and older versions.
 
 
-INCLUDE	'dtz80-lib-sound.inc'
+
 RAM_END
 	EQU	$ ;end address to copy into ram
