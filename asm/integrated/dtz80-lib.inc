@@ -27,7 +27,7 @@ SOUND_DATA
   EQU $81
 
 stackpointer
-  EQU $8fff  ;Address for the stack pointer
+  EQU $ffff  ;Address for the stack pointer
 
 ram_counter
   EQU $b000   ; Address for a counter in RAM
@@ -142,16 +142,28 @@ ESC     EQU     0
 L_CTRL  EQU     0
 SPACE   EQU     0x20
 
+KEY_1   EQU     0x16
+KEY_2   EQU     0x1e
+KEY_3   EQU     0x26
+KEY_4   EQU     0x25
+KEY_5   EQU     0x2e
+KEY_6   EQU     0x36
+KEY_7   EQU     0x3d
+KEY_8   EQU     0x3e
+KEY_9   EQU     0x46
+KEY_0   EQU     0x45
+
+
 
 SCAN_LOOKUP:
         DB      0       ;FOR SCAN-CODE 0 WHICH DOES NOT EXIST, I
         DB      0,0,0,0,0,0,0,0,0,0     ; scan code 001 to 010
         DB      0,0,0,0,0,0,0,0,L_SHIFT,L_CTRL     ; scan code 011 to 020
-        DB      'Q','!',0,0,0,'Z','S','A','W','@'     ; scan code 021 to 030
-        DB      0,0,'C','X','D','E','$','#',0,0     ; scan code 031 to 040
-        DB      SPACE,'V','F','T','R','%',0,0,'N','B'     ; scan code 041 to 050
-        DB      'H','G','Y','^',0,0,0,'M','J','U'     ; scan code 051 to 060
-        DB      '&','*',0,0,'<','K','I','O',')','('     ; scan code 061 to 070
+        DB      'Q','1',0,0,0,'Z','S','A','W','2'     ; scan code 021 to 030
+        DB      0,0,'C','X','D','E','4','3',0,0     ; scan code 031 to 040
+        DB      SPACE,'V','F','T','R','5',0,0,'N','B'     ; scan code 041 to 050
+        DB      'H','G','Y','6',0,0,0,'M','J','U'     ; scan code 051 to 060
+        DB      '7','8',0,0,'<','K','I','O','0','9'     ; scan code 061 to 070
         DB      0,0,'>','?','L',':','P','_',0,0     ; scan code 071 to 080
         DB      0,'"',0,'{','+',0,0,CAPS_LOCK,R_SHIFT,CR     ; scan code 081 to 090
         DB      '}',0,'|',0,0,0,0,0,0,0     ; scan code 091 to 100

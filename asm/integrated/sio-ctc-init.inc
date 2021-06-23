@@ -118,10 +118,6 @@ SIO_A_DI:
         OUT     (SIO_CA),A
         RET
 
-
-SPEC_RX_CONDITON:
-        JP      0000h            ; if buffer overrun then restart the program
-
 TX_EMP:
         ; check for TX buffer empty
         SUB     A

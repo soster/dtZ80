@@ -74,7 +74,7 @@ MAIN:
   IM      2               ; set int mode 2
   EI                      ; enable interupts
 
-  LD      A,00000000b     ; load initial value into RAM
+  LD      A,0     ; load initial value into RAM
   LD      (RAMCELL),A
 	LD      (RESET_SONG),A
 
@@ -88,10 +88,14 @@ MAIN:
 INCLUDE	'dtz80-lib.inc'
 INCLUDE 'sio-ctc-init.inc'
 
+ERROR_STR
+	DB 'ERROR',0
+
 RX_CHA_AVAILABLE:
         PUSH    AF              ; backup AF
 				PUSH    HL
         IN      A,(SIO_DA)      ; read RX character into A
+
 
         LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
         LD      B,0
@@ -99,22 +103,53 @@ RX_CHA_AVAILABLE:
         ADC     HL,BC
         LD      A,(HL)
 
-        OUT     (SIO_DA),A      ; echo char to transmitter
         OUT     (LCD_DATA),A    ; echo value to lcd
-        OUT     (SEVENSEGO),A  ; echo value to 7seg
-
 				LD  (RESET_SONG),A
 
-        CALL    TX_EMP          ; wait for outgoing char to be sent
-        LD      A,(RAMCELL)     ; change the pattern to show to the external
-        XOR     11000000b       ; world that this ISR was honored
-        LD      (RAMCELL),A
         POP			HL
 				POP     AF
         EI
         RETI
 
-CONTINUE_ISR:
+SPEC_RX_CONDITON:
+				LD HL, ERROR_STR
+				CALL LCD_MESSAGE
+				CALL DELAY
+        JP      0000h            ; if buffer overrun then restart the program				
+
+; scancode in a, sets HL to song address
+CHECK_SCANCODE_FOR_SONG:
+				CP '1'
+				JR Z,SELECT_1
+								
+				CP '2'
+				JR Z,SELECT_2
+
+				CP '3'
+				JR Z,SELECT_3
+				JR CHECK_SCANCODE_FOR_SONG_END
+SELECT_1:
+				LD a,1
+				call segprint_num
+				call delay
+				LD HL, SONG
+				JR CHECK_SCANCODE_FOR_SONG_END
+SELECT_2:
+				LD a,2
+				call segprint_num
+				call delay
+				LD HL, SONG2
+				JR CHECK_SCANCODE_FOR_SONG_END
+SELECT_3:
+				LD a,3
+				call segprint_num
+				call delay
+				LD HL, SONG3
+CHECK_SCANCODE_FOR_SONG_END:
+				LD a,0
+				LD (RESET_SONG),A
+				RET
+
 
 
 BOOTSTRAP:
@@ -1527,13 +1562,13 @@ LOUT
 	CALL	inc_ram_counter
 	CALL	ram_counter_segprint
   PUSH  AF     ;save af
-  LD  A,(RESET_SONG)
-	AND A; if value not 0 switch to different song!
+	LD  A,(RESET_SONG)
+	AND A
 	JR Z,CONT_INT	
-	LD A,0
-	LD  (RESET_SONG),A
+	CALL CHECK_SCANCODE_FOR_SONG
 	POP AF
-	LD HL,song2
+	
+	;POP BC; dummy, pop from stack because of missing ret
 	JP STARTHL
  
 CONT_INT:
