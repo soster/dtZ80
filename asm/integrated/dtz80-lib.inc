@@ -1,3 +1,6 @@
+;Library for my dtz80 computer
+;4 line lcd: http://www.ekenrooi.net/lcd/lcd0.shtml#_4_line_displays
+
 ;Constants
 SEVENSEGO
   EQU $00 	    ;I/O port 7 segment A0-A7=0
