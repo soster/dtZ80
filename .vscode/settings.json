@@ -1,5 +1,8 @@
 {
   "editor.tabSize": 2,
   "z80-macroasm.format.baseIndent": 1,
-  "z80-macroasm.format.uppercaseKeywords": true
+  "z80-macroasm.format.uppercaseKeywords": true,
+  "editor.defaultFormatter": "mborik.z80-macroasm",
+  "z80-macroasm.format.splitInstructionsByColon": false,
+  "z80-macroasm.format.whitespaceAfterInstruction": "single-space"
 }

@@ -2,13 +2,12 @@
 ;rasm player.asm player && minipro -p "at28c256" -w player.bin -s
 
 ;Only works if copied into RAM:
-RAM_DEST
-	EQU	$8000
+RAM_DEST EQU	$8000
 
+RAMCELL EQU     $f000
 
-RAMCELL EQU     0xf000
-
-RESET_SONG EQU 0xf002; if not 0, then start new song
+; if not 0, then start new song
+RESET_SONG EQU $f002
 
 
 
