@@ -4,7 +4,7 @@
 ; rasm test-lib.asm test-lib && minipro -p "at28c256" -w test-lib.bin -s
 
   org 0
-  CALL startup
+  LD  SP,stackpointer
   ld a,#0
   call segprint_num
   ld a,#1
@@ -23,6 +23,6 @@
   HALT
 
 start_message:
-  DB  "Testing.. 7Seg should show 4",0
+  DB  "1: 20 characters....2: 20 characters....3: 20 characters....4: 20 characters....",0
 
 include 'dtz80-lib.inc'

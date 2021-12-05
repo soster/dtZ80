@@ -1,7 +1,10 @@
 ;Library for my dtz80 computer
 ;4 line lcd: http://www.ekenrooi.net/lcd/lcd0.shtml#_4_line_displays
+;LCD: https://www.sparkfun.com/datasheets/LCD/HD44780.pdf
 
 ;Constants
+stackpointer
+  EQU $ffff  ;Address for the stack pointer. Init with "LD  SP,stackpointer"
 SEVENSEGO
   EQU $00 	    ;I/O port 7 segment A0-A7=0
 LCD_COMMAND
@@ -23,26 +26,28 @@ SIO_DA  EQU     40h; SIO Data Channel A
 SIO_DB  EQU     41h; Not used
 
 
-;Constants
+;Soundchip Addresses
 SOUND_REGISTER
   EQU $80
 SOUND_DATA
   EQU $81
 
-stackpointer
-  EQU $ffff  ;Address for the stack pointer
-
 ram_counter
   EQU $b000   ; Address for a counter in RAM
 
 ;Startup command sequence for the lcd:
-;$3f: Function set: 8-bit interface, 2-line, small font
+;$3f: Function set: 8-bit interface, 2-line, small font (only 2 or 1 line mode possible)
 ;$0f: Display on, cursor on
 ;$01: Clear display
-;$06: Entry mode: left to right, no shift
+;$06: Entry mode: left to right, no shift <- don't do this
+;$80: DRAM Counter to 0 ($80+ADDR)
 ;ff terminated.
 LCD_COMMANDS:
-  DB  $37,$0f,$01,$06,$ff
+  DB  $3f,$0f,$01,$80,$ff
+
+; For compatibility with 2 line displays there is some weird adressing going on:
+LCD_LINE_ADDR:
+  DB  $00,$40,$14,$54
 
 ;7 segment numbers,0-9:
 numbers:
@@ -88,6 +93,14 @@ segprint_num:;interpret a as a number 0-9 and translate it to the 7seg byte
   RET
 
 
+LCD_SET_RAM_ADDR:
+  CALL LCD_WAIT
+  OR $7f;For setting dram address highest bit = 1
+  OUT (LCD_COMMAND),A
+  CALL LCD_WAIT
+  RET
+
+
 ; Sends the init commands to the lcd
 ; Ues HL, AF
 LCD_PREPARE:
@@ -108,17 +121,38 @@ LCD_COM_END:
 ; Send a message to the LCD
 ; Expects the pointer in HL
 ; Message terminated by 0
-; Uses HL, AF
+; Uses HL, AF, BC
 LCD_MESSAGE:
+        LD      B,0;column
+        LD      C,0;line
+LCD_MESSAGE_BEG:
         CALL    LCD_WAIT
         LD      A,(HL)           ;Load character into A
         AND     A               ;Test for end of string (A=0)
         JR      Z,MESSAGE_END
         OUT     (lcd_data),A    ;Output the character
         INC     HL              ;Point to next character
-        JR      LCD_MESSAGE     ;Loop back for next character
+        INC     B               ; INC character counter
+        LD      A,B             ; Load num of characters into A
+        CP      $14;            ; $14=first of next line
+        JP      Z,MESSAGE_NEW_LINE
+        JR      LCD_MESSAGE_BEG ;Loop back for next character
+MESSAGE_NEW_LINE:
+        PUSH HL
+        LD b,0;Reset character counter
+        INC c;inc line counter
+        LD HL,LCD_LINE_ADDR;holds the lcd addresses for the 4 lines
+        add hl,bc;b already is 0, c has line counter in it!
+        CALL LCD_WAIT
+        LD A,(HL); Load new address for LCD Line
+        OR $80; $80 = LCD Flags for new character pos address
+        OUT (LCD_COMMAND),a;set new character pos address
+        CALL LCD_WAIT
+        POP HL
+        CALL LCD_MESSAGE_BEG
 MESSAGE_END:
         RET
+
 
 ; Wait passively for the lcd to execute the last command
 LCD_WAIT:
@@ -156,8 +190,23 @@ KEY_8   EQU     0x3e
 KEY_9   EQU     0x46
 KEY_0   EQU     0x45
 
+inc_ram_counter:;Increment the counter
+  PUSH  AF     ;save af
+  LD  A,(ram_counter)
+  INC A
+  LD  (ram_counter),A
+  POP AF
+  RET
+
+ram_counter_segprint:;print ram counter to seven segment
+  PUSH  AF
+  LD  A,(ram_counter)
+  OUT (sevensego),A
+  POP AF
+  RET
 
 
+; Lookup table for the keyboard
 SCAN_LOOKUP:
         DB      0       ;FOR SCAN-CODE 0 WHICH DOES NOT EXIST, I
         DB      0,0,0,0,0,0,0,0,0,0     ; scan code 001 to 010
@@ -187,17 +236,3 @@ SCAN_LOOKUP:
         DB      0,0,0,0,0,0,0,0,0,0     ; scan code 241 to 250
         DB      0,0,0,0,0,0,0,0,0,0     ; scan code 251 to 260
 
-inc_ram_counter:;Increment the counter
-  PUSH  AF     ;save af
-  LD  A,(ram_counter)
-  INC A
-  LD  (ram_counter),A
-  POP AF
-  RET
-
-ram_counter_segprint:;print ram counter to seven segment
-  PUSH  AF
-  LD  A,(ram_counter)
-  OUT (sevensego),A
-  POP AF
-  RET

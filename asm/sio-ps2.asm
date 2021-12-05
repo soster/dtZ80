@@ -1,4 +1,4 @@
-; Init and test SIO & CTC Chip
+; Init and test SIO & CTC Chip (Complete Version)
 ; PS/2 Interface via SIO
 ; rasm sio-ps2.asm sio-ps2 && minipro -p "at28c256" -w sio-ps2.bin -s
 ; stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb
@@ -21,21 +21,24 @@ SEVENSEGIO
         EQU     0x00; 7 segment base address
 
 LCD_COMMAND
-        EQU     0x20	    ;LCD command I/O port, A5=1
+        EQU     $04	    ;LCD command I/O port, A5=1
 LCD_DATA
-        EQU     0x21        ;LCD data I/O port,A5=1,A0=1
+        EQU     $05        ;LCD data I/O port,A5=1,A0=1
 
 RAMCELL EQU     0x8000
 
-CR       EQU     0
-L_SHIFT  EQU     0
-R_SHIFT  EQU     0
-CAPS_LOCK EQU     0
-NUM_LOCK EQU     0
-BACK_SPACE EQU     0x08
-ESC      EQU     0
-L_CTRL   EQU     0
-SPACE    EQU    0x20
+CR      EQU     0
+L_SHIFT EQU     0
+R_SHIFT EQU     0
+CAPS_LOCK
+        EQU     0
+NUM_LOCK
+        EQU     0
+BACK_SPACE
+        EQU     0x08
+ESC     EQU     0
+L_CTRL  EQU     0
+SPACE   EQU     0x20
 
 RESET:
         ORG     0
@@ -53,17 +56,13 @@ RESET:
         ORG     0100h           ; main code starts at $0100 because of interrupt vector!
 MAIN:
 
-        LD      A,1           ; Seven segment bits for "0"
+        LD      A,$3f           ; Seven segment bits for "0"
         OUT     (SEVENSEGIO),A  ; Output to seven segment
-
-        LD      D,0x80
-        CALL    DELAY           ; little delay
 
         CALL    SET_CTC         ; configure CTC
         CALL    SET_SIO         ; configure SIO
 
-        LD      A,2           ; Seven segment bits for "0"
-        OUT     (SEVENSEGIO),A  ; Output to seven segment
+
 
 
         LD      A,0             ; set high byte of interrupt vectors to point to page 0
@@ -79,6 +78,9 @@ MAIN:
 
         LD      HL,commands      ;Address of command list for LCD, $ff terminated
 
+        LD      A,$6           ; Seven segment bits for "1"
+        OUT     (SEVENSEGIO),A  ; Output to seven segment
+
 LCD_COM_LOOP:
         CALL    LCD_WAIT
         LD      A,(HL)           ;Next command
@@ -92,10 +94,24 @@ LCD_COM_LOOP:
 LCD_COM_END:
         LD      D,ffh
         CALL    DELAY
-        LD      A,6h
+        LD      A,$5b
         OUT     (SEVENSEGIO),A
 
-        
+        LD      HL,START_MESSAGE       ;Message address, 0 terminated
+        LD      B,0
+message_loop:           ;Loop back here for next character
+        LD      A,(HL)           ;Load character into A
+        AND     A               ;Test for end of string (A=0)
+        JR      Z,ENDLESS_LOOP
+        OUT     (lcd_data),A    ;Output the character
+        CALL    LCD_WAIT
+        LD      A,B
+        INC     B
+        INC     HL              ;Point to next character
+        JR      message_loop     ;Loop back for next character
+
+
+
 ENDLESS_LOOP:
         LD      D,ffh
         CALL    DELAY
@@ -180,7 +196,7 @@ SET_SIO:
                                 ; (see datasheet): in our example, 0x0C for Ch.A receiving a char, 0x0E
                                 ; for special conditions
         OUT     (SIO_CB),A
-        
+
         ; the following are settings for channel A
         LD      A,01h            ; write into WR0: select WR1
         OUT     (SIO_CA),A
@@ -241,16 +257,17 @@ RX_CHA_AVAILABLE:
         CALL    A_RTS_OFF       ; disable RTS
         IN      A,(SIO_DA)      ; read RX character into A
 
-        LD  HL, SCAN_LOOKUP     ; fetch scancode from lookup table
-        LD  B, 0
-        LD  C, A
-        ADC HL, BC
-        LD A,(HL)
+        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
+        LD      B,0
+        LD      C,A
+        ADC     HL,BC
+        LD      A,(HL)
 
 
         OUT     (SIO_DA),A      ; echo char to transmitter
-        OUT     (SEVENSEGIO),A  ; echo value to 7seg
+        ;OUT     (SEVENSEGIO),A  ; echo value to 7seg
         OUT     (LCD_DATA),A    ; echo value to lcd
+        OUT     (SEVENSEGIO),A  ; echo value to 7seg
         CALL    TX_EMP          ; wait for outgoing char to be sent
         ;call RX_EMP            ; flush receive buffer
         LD      A,(RAMCELL)     ; change the pattern to show to the external
@@ -286,18 +303,25 @@ RX_EMP:
         JP      RX_EMP
 
 LCD_WAIT:
-        ;wait until lcd is ready
-        IN      A,(LCD_COMMAND) ;Read the status into A
-                                ;trick to conditionally jump if bit 7 is true:
-        RLCA                    ;Rotate A left, bit 7 moves into the carry flag
-        JR      C,LCD_WAIT      ;Loop back if the carry flag is set
+        PUSH    AF
+        LD      A,$ff
+lcd_wait_loop2:
+        NOP
+        DEC     A
+        JP      NZ,lcd_wait_loop2
+        OUT     (sevensegio),A
+        POP     AF
         RET
+
 
 SERIAL_MESSAGE:
         DB      "HELLO WORLD!",0
 
+START_MESSAGE:
+        DB      "Initializing...",0
+
 COMMANDS:
-    db $3f,$0f,$01,$06,$ff
+        DB      $3f,$0f,$01,$06,$ff
 
 SCAN_LOOKUP:
         DB      0       ;FOR SCAN-CODE 0 WHICH DOES NOT EXIST, I
