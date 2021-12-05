@@ -5,16 +5,8 @@
 
   org 0
   LD  SP,stackpointer
-  ld a,#0
-  ;call segprint_num
-  ld a,#1
-  ;call segprint_num
   CALL LCD_WAIT
-  ld a,#2
-  ;CALL segprint_num
   CALL LCD_PREPARE
-  ld a,#3
-  ;CALL segprint_num
   LD HL,START_MESSAGE       ;Message address, 0 terminated
   call LCD_MESSAGE
   CALL DELAY
