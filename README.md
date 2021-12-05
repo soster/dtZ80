@@ -7,7 +7,9 @@ The Z80 is easier to source so I used that instead.
 
 I started on breadboards but quickly discovered the limits of that so I soldered some prototypes and finally designed some PCBs with kicad.
 
-The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.uk/), so I can exchange expansion cards (I use the RC2014 soundcard which is great!)
+The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.uk/), so I can exchange expansion cards.
+
+This documentation now covers the new "Black Edition", a board without the need to use extension cards.
 
 
 ## Tools
@@ -20,21 +22,29 @@ The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.
 ![dtZ80 Black Edition](/images/dtZ80-Black_Edition.jpg)
 
 
-### IO Board
+### Address Space
+    $00: I/O port 7 segment (A0-A7=0)
+    $04: LCD command I/O port (A5=1)
+    $05: LCD data I/O port (A5=1,A0=1)
+    $40: SIO Data Channel A
+    $42: SIO Control Channel A
+    $60: CTC Channel 0
+    $61: CTC Channel 1
+    $62: CTC Channel 2
+    $63: CTC Channel 3
+    $80: Sound Register
+    $81: Sound Data
 
-#### Address Space for the Simple IO Board
-The 74LS138 determines the address space:
 
-    0x00 = 7 Segment display
-    0x20 = Parallel Port (LCD Display)
-    0x40 = SIO (PS/2 via Serial)
-    0x60 = CTC
+#### LCD
+The black edition uses a 4 line. 20 column LCD Display (2004A V1.1) probably based on the HD44780 Chip: [Datasheet](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf)
+It behaves strangely if we send character by character, it uses line 3 after line 1 and the lines 2 and 4 are not usable. We have to manually set the DDRAM address according to the line:
+    Line 1: $00 - $13
+    Line 2: $40 - $53
+    Line 3: $14 - $27
+    Line 4: $54 - $67
 
-#### Address Space for the new Black Edition
-    0x00 = 7 Segment Display and LCDisplay
-    0x40 = SIO
-
-
+I assume this is due to backwarts compatibility to 2 line displays.
 
 #### Parallel Interface
 The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an error while designing the pcb, it has the following pins (GND=Pin 1):
@@ -42,19 +52,13 @@ The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an e
 ![Parallel Port](/images/parallel-port.png "Parallel Port")
 
 #### Serial Interface
-Chip to use: Z84C40, called SIO
-http://rc2014.co.uk/wp-content/uploads/2017/06/SIO2.pdf
+TODO
 
-B/A SelPort B or A Select(input, active High). This pin defines which port isaccessed during a data transfer between the Z80 CPU and the Z80 PIO. ALow level on this pin selects Port A while a High level selects Port B.Often, Address bit A0 from the CPU is used for this selection function.C/D SelControl or Data Select(input, active High). This pin defines the type ofdata transfer to be performed between the CPU and the PIO. A High levelon this pin during a CPU write to the PIO causes the Z80 data bus to beinterpreted as a command for the port selected by the B/A Select line. ALowlevelonthispinmeansthattheZ80databusisbeingusedtotransferdata between the CPU and the PIO. Often, Address bit Al from the CPU isused for this function.
-
+### CTC Clock Timer Chip
+TODO
 
 ### Sound
-We use the RC2014 sound card from here: [RC2014 YM2149](https://github.com/electrified/rc2014-ym2149)
-
-It is jumpered to use this address space:
-
-    0xd0 = Data Port
-    0xd8 = Register Port
+TODO
 
 
 
@@ -65,6 +69,7 @@ Document the new, integrated "Black Edition"!
 
 
 ### Graphics
+Graphics is not finished yet. These are some ideas:
 Based on: TMS9918A
 Problem: Works only with DRAM for SRAM
 Looks like you will need to latch the address bits 8-15 when RAS goes low
