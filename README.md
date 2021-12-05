@@ -37,8 +37,8 @@ This documentation now covers the new "Black Edition", a board without the need 
 
 
 #### LCD
-The black edition uses a 4 line. 20 column LCD Display (2004A V1.1) probably based on the HD44780 Chip: [Datasheet](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf)
-It behaves strangely if we send character by character, it uses line 3 after line 1 and the lines 2 and 4 are not usable. We have to manually set the DDRAM address according to the line:
+The black edition uses a 4 line, 20 column LCD Display (2004A V1.1) probably based on the HD44780 Chip [(Datasheet)](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf).
+It behaves strangely if we send character by character to it, it uses line 3 after line 1 and the lines 2 and 4 are not usable. We have to manually set the DDRAM address holding the character position according to the current line:
     Line 1: $00 - $13
     Line 2: $40 - $53
     Line 3: $14 - $27
