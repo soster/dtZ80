@@ -1,16 +1,17 @@
 ;Library for my dtz80 computer
+;Uses the SIO, CTC and 4 line LCD 2004A based on the HD44780 (?)
 ;4 line lcd: http://www.ekenrooi.net/lcd/lcd0.shtml#_4_line_displays
 ;LCD: https://www.sparkfun.com/datasheets/LCD/HD44780.pdf
 
 ;Constants
-stackpointer
-  EQU $ffff  ;Address for the stack pointer. Init with "LD  SP,stackpointer"
+STACKPOINTER
+  EQU $ffff  ;Address for the stack pointer. Init with "LD  SP,STACKPIONTER"
 SEVENSEGO
-  EQU $00 	    ;I/O port 7 segment A0-A7=0
+  EQU $00;I/O port 7 segment A0-A7=0
 LCD_COMMAND
-  EQU $04	    ;LCD command I/O port, A5=1
+  EQU $04;LCD command I/O port, A5=1
 LCD_DATA
-  EQU $05        ;LCD data I/O port,A5=1,A0=1
+  EQU $05;LCD data I/O port,A5=1,A0=1
 
 
 ;; CTC Addresses
@@ -33,21 +34,25 @@ SOUND_DATA
   EQU $81
 
 ram_counter
-  EQU $b000   ; Address for a counter in RAM
+  EQU $b000   ; Address for a counter in RAM  
 
 ;Startup command sequence for the lcd:
 ;$3f: Function set: 8-bit interface, 2-line, small font (only 2 or 1 line mode possible)
-;$0f: Display on, cursor on
+;$0f: Display on, cursor on (alt: Display on, cursor off = $0C), Display off = $08
 ;$01: Clear display
-;$06: Entry mode: left to right, no shift <- don't do this
+;$06: Entry mode: left to right, no shift <- don't do this for 4 line mode!
 ;$80: DRAM Counter to 0 ($80+ADDR)
 ;ff terminated.
 LCD_COMMANDS:
-  DB  $3f,$0f,$01,$80,$ff
+  DB  $3f,$0C,$01,$80,$ff
 
-; For compatibility with 2 line displays there is some weird adressing going on:
+; For compatibility with 2 line displays there is some weird adressing going on,
+; line 2 starts at $40 and line 4 at $54. For a 2 line display use only $00 and $14.
+; addresses are $00,$40,$14,$54 or'd with $80. $80 is bit #7 set to high, rest of the bits are the address.
 LCD_LINE_ADDR:
-  DB  $00,$40,$14,$54
+  DB  $80,$C0,$94,$D4
+;Number of lines in LCD
+LCD_LINES EQU  $04
 
 ;7 segment numbers,0-9:
 numbers:
@@ -142,16 +147,30 @@ MESSAGE_NEW_LINE:
         LD b,0;Reset character counter
         INC c;inc line counter
         LD HL,LCD_LINE_ADDR;holds the lcd addresses for the 4 lines
-        add hl,bc;b already is 0, c has line counter in it!
+        ADD HL,BC;b already is 0, c has line counter in it!
         CALL LCD_WAIT
         LD A,(HL); Load new address for LCD Line
-        OR $80; $80 = LCD Flags for new character pos address
-        OUT (LCD_COMMAND),a;set new character pos address
+        OUT (LCD_COMMAND),A;set new character pos address
         CALL LCD_WAIT
-        POP HL
-        CALL LCD_MESSAGE_BEG
+        LD a,c
+        CP LCD_LINES; line counter = num of lines?
+        JP Z,MESSAGE_RESET_LINE   
+MESSAGE_NEW_LINE_END:
+        POP HL     
+        JR LCD_MESSAGE_BEG
+MESSAGE_RESET_LINE:
+        LD C,0; Reset line counter
+        JR MESSAGE_NEW_LINE_END
 MESSAGE_END:
         RET
+
+
+LCD_CLEAR:
+        LD  A,$01;
+        OUT (LCD_COMMAND),A
+        CALL LCD_WAIT
+        RET
+
 
 
 ; Wait passively for the lcd to execute the last command

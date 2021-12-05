@@ -6,15 +6,15 @@
   org 0
   LD  SP,stackpointer
   ld a,#0
-  call segprint_num
+  ;call segprint_num
   ld a,#1
-  call segprint_num
+  ;call segprint_num
   CALL LCD_WAIT
   ld a,#2
-  CALL segprint_num
+  ;CALL segprint_num
   CALL LCD_PREPARE
   ld a,#3
-  CALL segprint_num
+  ;CALL segprint_num
   LD HL,START_MESSAGE       ;Message address, 0 terminated
   call LCD_MESSAGE
   CALL DELAY
@@ -23,6 +23,6 @@
   HALT
 
 start_message:
-  DB  "1: 20 characters....2: 20 characters....3: 20 characters....4: 20 characters....",0
+  DB  "1: 20 characters...12: 20 characters...23: 20 characters...34: 20 characters...45: 20 characters...5",0
 
 include 'dtz80-lib.inc'
