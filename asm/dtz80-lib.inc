@@ -64,7 +64,7 @@ LCD_COMMANDS:
 ;$06: Entry mode: left to right, no shift
 ;ff terminated.
 LCD_COMMANDS_CURSOR:
-  DB  $37,$0f,$01,$06,$ff        
+    db $37,$0f,$01,$06,$ff
 
 ; For compatibility with 2 line displays there is some weird adressing going on,
 ; line 2 starts at $40 and line 4 at $54. For a 2 line display use only $00 and $14.
@@ -133,7 +133,7 @@ LCD_SET_RAM_ADDR:
 LCD_PREPARE:
     ld hl,LCD_COMMANDS      ;Address of command list for LCD, $ff terminated
 LCD_COM_LOOP:
-    
+
     ld a,(HL)           ;Next command
     inc a               ;Add 1 so we can test for $ff...
     jr z,LCD_COM_END    ;...by testing for zero
@@ -153,7 +153,7 @@ LCD_COM_END:
 LCD_PREPARE_CURSOR:
     ld hl,LCD_COMMANDS_CURSOR      ;Address of command list for LCD, $ff terminated
 LCD_COM_LOOP2:
-    
+
     ld a,(HL)           ;Next command
     inc a               ;Add 1 so we can test for $ff...
     jr z,LCD_COM_END2    ;...by testing for zero
@@ -177,7 +177,7 @@ LCD_MESSAGE_BEG:
     and a               ;Test for end of string (A=0)
     jr z,MESSAGE_END
     out (lcd_data),a    ;Output the character
-    call  LCD_WAIT
+    call LCD_WAIT
     inc hl              ;Point to next character
     inc b               ; INC character counter
     ld a,b             ; Load num of characters into A
@@ -211,15 +211,15 @@ MESSAGE_END:
 ; Message terminated by 0
 ; Uses HL, AF
 LCD_MESSAGE_OLD:
-        CALL    LCD_WAIT
-        LD      A,(HL)           ;Load character into A
-        AND     A               ;Test for end of string (A=0)
-        JR      Z,MESSAGE_END_OLD
-        OUT     (lcd_data),A    ;Output the character
-        INC     HL              ;Point to next character
-        JR      LCD_MESSAGE     ;Loop back for next character
+    call LCD_WAIT
+    ld a,(HL)           ;Load character into A
+    and a               ;Test for end of string (A=0)
+    jr z,MESSAGE_END_OLD
+    out (lcd_data),a    ;Output the character
+    inc hl              ;Point to next character
+    jr LCD_MESSAGE     ;Loop back for next character
 MESSAGE_END_OLD:
-        RET
+    ret
 
 
 
@@ -241,9 +241,9 @@ lcd_wait_loop:
     dec a
     jr nz,lcd_wait_loop
 
-    ld  a,$ff
+    ld a,$ff
 lcd_wait_loop2:
-    dec a    
+    dec a
     jr nz,lcd_wait_loop2
 
     ld a,0
