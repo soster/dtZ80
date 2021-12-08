@@ -2,209 +2,218 @@
 ;rasm player.asm player && minipro -p "at28c256" -w player.bin -s
 
 ;Only works if copied into RAM:
-RAM_DEST EQU	$8000
+RAM_DEST
+	equ $8000
 
-RAMCELL EQU     $f000
+RAMCELL
+	equ $f000
 
 ; if not 0, then start new song
-RESET_SONG EQU $f002
+RESET_SONG
+	equ $f002
 
 
 
 
 
 RESET:
-  ORG     0
-  JP      MAIN
+	org 0
+	jp MAIN
 
    ; interrupt vector for SIO
-   ORG     0ch
-   DEFW    RX_CHA_AVAILABLE
-   ORG     0Eh
-   DEFW    SPEC_RX_CONDITON
+	org $0c
+	defw RX_CHA_AVAILABLE
+	org $0E
+	defw SPEC_RX_CONDITON
 
 
-  ORG     0100h           ; main code starts at $0100 because of interrupt vector!
+	org $0100           ; main code starts at $0100 because of interrupt vector!
 MAIN:
-  LD	SP,stackpointer
-	CALL    SET_CTC         ; configure CTC
-  CALL    SET_SIO         ; configure SIO
-  LD      A,0             ; set high byte of interrupt vectors to point to page 0
-  LD      I,A
+	ld sp,stackpointer
+	call SET_CTC         ; configure CTC
+	call SET_SIO         ; configure SIO
+	ld a,0             ; set high byte of interrupt vectors to point to page 0
+	ld i,a
 
-  IM      2               ; set int mode 2
-  EI                      ; enable interupts
+	im 2               ; set int mode 2
+	ei                      ; enable interupts
 
-  LD      A,0     ; load initial value into RAM
-  LD      (RAMCELL),A
-	LD      (RESET_SONG),A
+	ld a,0     ; load initial value into RAM
+	ld (RAMCELL),a
+	ld (RESET_SONG),a
 
-  CALL    A_RTS_OFF        ; remove RTS
+	call A_RTS_OFF        ; remove RTS
 
   ;Show some numbers:
-	LD	A,0
-	LD	(ram_counter),A
-	LD	A,1              ;Offset for the number to display
-	CALL	delay
+	ld a,0
+	ld (ram_counter),a
+	ld a,1              ;Offset for the number to display
+	call delay
 
-	CALL LCD_PREPARE
-	LD HL, STARTUP_STR
-	CALL LCD_MESSAGE
+	call LCD_PREPARE
+	ld hl,STARTUP_STR
+	call LCD_MESSAGE
 
 
-	CALL BOOTSTRAP
-	
+	call BOOTSTRAP
 
-INCLUDE	'dtz80-lib.inc'
-INCLUDE 'sio-ctc-init.inc'
+
+	INCLUDE'dtz80-lib.inc'
+	INCLUDE'sio-ctc-init.inc'
 
 ERROR_STR
-	DB 'ERROR',0
+	db 'ERROR',0
 
 STARTUP_STR
-  DB '8 Bit Music Player',0
+	db '8 Bit Music Player',0
 
 PLAYING_STR
-  DB 'PLAYING ',0
+	db 'PLAYING ',0
 
 STOP_STR
-  DB 'STOPPED',0	
+	db 'STOPPED',0
 
 
 RX_CHA_AVAILABLE:
-        IN      A,(SIO_DA)      ; read RX character into A
+	in a,(SIO_DA)      ; read RX character into A
 
-        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
-        LD      B,0
-        LD      C,A
-        ADC     HL,BC
-        LD      A,(HL)
+	ld hl,SCAN_LOOKUP     ; fetch scancode from lookup table
+	ld b,0
+	ld c,a
+	adc hl,bc
+	ld a,(HL)
 
-				LD  (RESET_SONG),A
+	ld (RESET_SONG),a
 
-       	LD   DE,CHECK_SCANCODE_FOR_SONG ;This will be the address on the stack after the interrupt
-       	PUSH DE          ;Put on Stack. Will jump here after RETI
+	ld de,CHECK_SCANCODE_FOR_SONG ;This will be the address on the stack after the interrupt
+	push de          ;Put on Stack. Will jump here after RETI
 
-        EI
-        RETI
+	ei
+	reti
 
 SPEC_RX_CONDITON:
-				LD HL, ERROR_STR
-				CALL LCD_MESSAGE
-				CALL DELAY
-        JP      0000h            ; if buffer overrun then restart the program				
+	ld hl,ERROR_STR
+	call LCD_MESSAGE
+	call DELAY
+	jp $0000            ; if buffer overrun then restart the program				
 
 ; Check for input character in (RESET_SONG) and plays song number
 CHECK_SCANCODE_FOR_SONG:
-				CALL LCD_PREPARE; delete screen
-				LD HL, PLAYING_STR;
-				CALL LCD_MESSAGE; "PLAYING "
+	call LCD_PREPARE; delete screen
+	ld hl,PLAYING_STR;
+	call LCD_MESSAGE; "PLAYING "
 
-				LD A,(RESET_SONG); fetch input character
-				OUT     (lcd_data),A ;Output the character
+	ld a,(RESET_SONG); fetch input character
+	out (lcd_data),a ;Output the character
 
 				;Check for input number
-				CP '1'
-				JR Z,SELECT_1
-								
-				CP '2'
-				JR Z,SELECT_2
+	cp '1'
+	jr z,SELECT_1
 
-				CP '3'
-				JR Z,SELECT_3
+	cp '2'
+	jr z,SELECT_2
 
-				CP '4'
-				JR Z,SELECT_4
+	cp '3'
+	jr z,SELECT_3
 
-				CP '5'
-				JR Z,SELECT_5
+	cp '4'
+	jr z,SELECT_4
 
-				CP '6'
-				JR Z,SELECT_6
+	cp '5'
+	jr z,SELECT_5
 
-				CP SPACE
-				JR Z,SELECT_SPACE
-			
+	cp '6'
+	jr z,SELECT_6
+
+	cp SPACE
+	jr z,SELECT_SPACE
+
 
 				;Default:
-				LD HL, SONG
+	ld hl,SONG
 
 
-				JR CHECK_SCANCODE_FOR_SONG_END
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_1:
-				LD HL, SONG
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_2:
-				LD HL, SONG2
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG2
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_3:
-				LD HL, SONG3
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG3
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_4:
-				LD HL, SONG4
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG4
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_5:
-				LD HL, SONG5
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG5
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_6:
-				LD HL, SONG6
-				JR CHECK_SCANCODE_FOR_SONG_END
+	ld hl,SONG6
+	jr CHECK_SCANCODE_FOR_SONG_END
 SELECT_SPACE:; mute:
-					XOR	A
-					LD	H,A
-					LD	L,A
-					LD	(AYREGS+AmplA),A
-					LD	(AYREGS+AmplB),HL
-					XOR	A
-					LD	C,SOUND_REGISTER
-					LD	HL,AYREGS
+	xor a
+	ld h,a
+	ld l,a
+	ld (AYREGS+AmplA),a
+	ld (AYREGS+AmplB),hl
+	xor a
+	ld c,SOUND_REGISTER
+	ld hl,AYREGS
 LOUT2:
-					OUT	(C),A
-					LD	C,SOUND_DATA
-					OUTI
-					LD	C,SOUND_REGISTER
-					INC	A
-					CP	13
-					JR	NZ,LOUT2
-					OUT	(C),A
-					
-					LD HL,(STOP_STR
-					CALL LCD_MESSAGE
+	out (C),a
+	ld c,SOUND_DATA
+	outi
+	ld c,SOUND_REGISTER
+	inc a
+	cp 13
+	jr nz,LOUT2
+	out (C),a
+
+	ld hl,(STOP_STR
+	call LCD_MESSAGE
 
 SELECT_SPACE_LOOP:
-					CALL DELAY
-					JR SELECT_SPACE_LOOP
-					
+	call DELAY
+	jr SELECT_SPACE_LOOP
 
-				
+
+
 CHECK_SCANCODE_FOR_SONG_END:
-				LD a,0
-				LD (RESET_SONG),A;reset input character here
-				JP STARTHL;Start player with song in HL
+	ld a,0
+	ld (RESET_SONG),a;reset input character here
+	jp STARTHL;Start player with song in HL
 ; --- END Check Scancode
 
 ; Music tracks:
-SONG EQU	$
-	INCBIN	"./tunes/through_yeovil.pt3"
-SONG2 EQU $
-	INCBIN  "./tunes/MmcM_-_Summer_of_Rain.pt3"
-SONG3 EQU $
-	INCBIN  "./tunes/altitude.pt3"
-SONG4 EQU $
-  INCBIN  "./tunes/Voxel - Ghostbusters (TSmix) by voxel_triumph.pt3"
-SONG5 EQU $
-  INCBIN  "./tunes/MmcM_-_Agressive_Attack.pt3"
-SONG6 EQU $
-  INCBIN  "./tunes/backup_forever.pt3"
+SONG
+	equ $
+	incbin "./tunes/through_yeovil.pt3"
+SONG2
+	equ $
+	incbin "./tunes/MmcM_-_Summer_of_Rain.pt3"
+SONG3
+	equ $
+	incbin "./tunes/altitude.pt3"
+SONG4
+	equ $
+	incbin "./tunes/Voxel - Ghostbusters (TSmix) by voxel_triumph.pt3"
+SONG5
+	equ $
+	incbin "./tunes/MmcM_-_Agressive_Attack.pt3"
+SONG6
+	equ $
+	incbin "./tunes/backup_forever.pt3"
 
 
 BOOTSTRAP:
   ;copy into RAM:
-	LD	HL,BOOTSTRAP_END ;Code to be moved
-	LD	DE,RAM_DEST ;Destination address
-	LD	BC,28000;guess how much bytes to copy
-	LDIR                ;Copy
-	JP	#8000; JP to RAM where the program has been copied to
+	ld hl,BOOTSTRAP_END ;Code to be moved
+	ld de,RAM_DEST ;Destination address
+	ld bc,28000;guess how much bytes to copy
+	ldir                ;Copy
+	jp $8000; JP to RAM where the program has been copied to
 
 
 
@@ -217,14 +226,14 @@ ORG
 START_RAM:
 
 
-	LD	A,0
-	LD	(START+10),A
-	LD HL,SONG
-	CALL	STARTHL
+	ld a,0
+	ld (START+10),a
+	ld hl,SONG
+	call STARTHL
 
 ; The Music player code:
-INCLUDE 'player.inc'
+	INCLUDE'player.inc'
 
 
 RAM_END
-	EQU	$ ;end address to copy into ram
+	equ $ ;end address to copy into ram

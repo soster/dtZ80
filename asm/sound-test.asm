@@ -3,68 +3,61 @@
 ;Needs RAM
 ; rasm sound-test.asm sound-test && minipro -p "at28c256" -w sound-test.bin -s
 
-;Constants
-data_port
-  EQU $81
-register_port
-  EQU $80
 
-org  0
-  CALL startup
-  LD A,0
-  CALL segprint_num
-  CALL LCD_PREPARE
-  LD HL,START_MESSAGE       ;Message address, 0 terminated
-  call LCD_MESSAGE
-  LD A,1
-  CALL segprint_num
 
-sound:
-  LD A,7
-  OUT (register_port),A ;select the mixer register
-  LD A,62
-  OUT (data_port),A ; enable channel A only
-  LD A,8
-  OUT (register_port),A ; channel A volume
-  LD A,15
-  OUT (data_port),A ; set it to maximum
-  LD A,0
-  OUT (register_port),A; select channel A pitch
+org 0
+    ld  sp,STACKPOINTER
+    call  LCD_PREPARE
+    ld  hl,START_MESSAGE       ;Message address, 0 terminated
+    call  LCD_MESSAGE
+
+SOUND:
+    ld  a,7
+    out (SOUND_REGISTER),a ;select the mixer register
+    ld  a,62
+    out (SOUND_DATA),a ; enable channel A only
+    ld  a,8
+    out (SOUND_REGISTER),a ; channel A volume
+    ld  a,15
+    out (SOUND_DATA),a ; set it to maximum
+    ld  a,0
+    out (SOUND_REGISTER),a; select channel A pitch
 reset:
-  
-  LD B,255
+
+    ld  b,255
 loop:
-  
-  LD A,B
-  OUT (data_port),A; set it
-  CALL pause
-  DEC B
-  JP NZ,loop
-  JP reset
-pause:
-  
-  PUSH BC
-  PUSH DE
-  PUSH AF
-  LD BC,$1500            ; Loads BC with hex 1000
+
+    ld  a,b
+    out (SOUND_DATA),a; set it
+    call  pause
+    dec b
+    jp  nz,loop
+    jp  reset
+
+
+PAUSE:
+    push  bc
+    push  de
+    push  af
+    ld  bc,$1500            ; Loads BC with hex 1000
 outer:
-  
-  DEC BC                  ; Decrements BC
-  LD A,B                 ; Copies B into A
-  OR C                   ; Bitwise OR of C with A (now, A = B | C)
-  JP NZ,outer            ; Jumps back to Outer: label if A is not zero
 
-  POP AF
-  POP DE
-  POP BC
-  RET                     ; Return from call to this subroutine
+    dec bc                  ; Decrements BC
+    ld  a,b                 ; Copies B into A
+    or  c                   ; Bitwise OR of C with A (now, A = B | C)
+    jp  nz,outer            ; Jumps back to Outer: label if A is not zero
 
-done:
-  
-  HALT
+    pop af
+    pop de
+    pop bc
+    ret                     ; Return from call to this subroutine
+
+DONE:
+
+    halt
 
 
-start_message:
-  DB  "Sound Test",0
+START_MESSAGE:
+    db  "Sound Test",0
 
-INCLUDE 'dtz80-lib.inc'
+    include'dtz80-lib.inc'

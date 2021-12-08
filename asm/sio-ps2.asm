@@ -42,6 +42,7 @@ SPACE   EQU     0x20
 
 RESET:
         ORG     0
+        LD  SP,$ffff
         JP      MAIN
 
 
@@ -121,7 +122,7 @@ ENDLESS_LOOP:
 SET_CTC:
 ;init CTC_CH0
 ;Information from the datasheet:
-;Counter Mode = Bit 6 set, otherwise Timer mode. Timer mode references the system clock, counter mode the trigger signal. 
+;Counter Mode = Bit 6 set, otherwise Timer mode. Timer mode references the system clock, counter mode the trigger signal.
 ;For Channel 0 the trigger signal comes from a 7.3728 Mhz crystal. (deprecated, now use global clock)
 ;ATTENTION: Trigger signal not working anymore. Therefore, we use the system clock with 7.3728 Mhz / 16 / 24 = 19.200 Hz
 ;For Timer Mode: The prescaler in Bit 5 defines if the clock is divided by 16 (0) or 256 (1).
@@ -254,7 +255,6 @@ SIO_A_DI:
 
 RX_CHA_AVAILABLE:
         PUSH    AF              ; backup AF
-        CALL    A_RTS_OFF       ; disable RTS
         IN      A,(SIO_DA)      ; read RX character into A
 
         LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
@@ -273,7 +273,6 @@ RX_CHA_AVAILABLE:
         LD      A,(RAMCELL)     ; change the pattern to show to the external
         XOR     11000000b       ; world that this ISR was honored
         LD      (RAMCELL),A
-        CALL    A_RTS_ON        ; enable again RTS
         POP     AF
         EI
         RETI
@@ -318,7 +317,7 @@ SERIAL_MESSAGE:
         DB      "HELLO WORLD!",0
 
 START_MESSAGE:
-        DB      "Initializing...",0
+        DB      ">",0
 
 COMMANDS:
         DB      $3f,$0f,$01,$06,$ff
