@@ -21,30 +21,32 @@ SET_CTC:
                             ; clock 16 times the requested baud rate (in our case, 19200 x 16 = 307200 Hz)
                             ; OSZ outputs ca. 57 khz (57600), why?
 ;CTC_CH3 disabled
-        LD      A,00000011b      ; interrupt off, timer mode, prescaler=16, don't care ext. TRG edge,
+        ;LD      A,00000011b      ; interrupt off, timer mode, prescaler=16, don't care ext. TRG edge,
                             ; start timer on loading constant, no time constant follows, software reset, command word
-        OUT     (CTC_CH3),A         ; CH3 doesn't run
+        ;OUT     (CTC_CH3),A         ; CH3 doesn't run
+        ;out     (CTC_CH1),A
+        ;out     (CTC_CH2),A
 
 ;init CTC_CH1
 ;CTC_CH1 divides CPU CLK by (256*256) providing a clock signal at TO1. TO1 is connected to TRG2.
 ;T01 outputs f= CPU_CLK/(256*256) => 6MHz / ( 256 * 256 ) => 91.55Hz
-        LD      A,00100111b      ; interrupt off; timer mode; prescaler=256; don't care ext; automatic trigger;
+        ;LD      A,00100111b      ; interrupt off; timer mode; prescaler=256; don't care ext; automatic trigger;
                             ; time constant follows; cont. operation; command word
-        OUT     (CTC_CH1),A
-        LD      A,0x00           ; time constant - 0 stands for 256
-        OUT     (CTC_CH1),A
+        ;OUT     (CTC_CH1),A
+        ;LD      A,0x00           ; time constant - 0 stands for 256
+        ;OUT     (CTC_CH1),A
 
 ;init CTC_CH2
 ;CTC_CH2 divides CLK/TRG2 clock providing a clock signal at TO2.
 ; T02 outputs f= CLK/TRG / 91 => 91.55Hz / 91 => ~ Hz / 1s
-        LD      A,01000111b      ; interrupt off, counter mode, prescaler=16 (doesn't matter), ext. start,
+        ;LD      A,01000111b      ; interrupt off, counter mode, prescaler=16 (doesn't matter), ext. start,
                             ; start upon loading time constant, time constant follows,sw reset, command word
-        OUT     (CTC_CH2),A
-        LD      A,0x5b           ; time constant 91d
-        OUT     (CTC_CH2),A         ; loaded into channel 2
-        LD      A,00010000b      ; D7..D3 provide the first part of the int vector (in our case, $10), followed by
+        ;OUT     (CTC_CH2),A
+        ;LD      A,0x5b           ; time constant 91d
+        ;OUT     (CTC_CH2),A         ; loaded into channel 2
+        ;LD      A,00010000b      ; D7..D3 provide the first part of the int vector (in our case, $10), followed by
                             ; D2..D1, provided by the CTC (they point to the channel), d0=interrupt word
-        OUT     (CTC_CH0),A         ; send to CTC
+        ;OUT     (CTC_CH0),A         ; send to CTC
 
         RET
 

@@ -22,6 +22,20 @@ MAIN:
 
         call A_RTS_OFF
 
+        call LCD_CLEAR
+
+        call POST
+
+        ; clear ram
+        ld hl,TEXT_BUFFER
+        ld a,0
+        ld bc,$0007
+        call FILL_RAM
+        ; end clear ram
+
+        call LCD_RESET
+
+ 
         call LCD_PREPARE
         ld hl,STARTUP_STR
         call LCD_MESSAGE
@@ -33,46 +47,33 @@ MAIN:
         ei                      ; enable interupt
 
 
-ENDLESS_LOOP:
-        ld d,$ff
-        call DELAY
-        call ENDLESS_LOOP
+ENDLESS_LOOP:        
+        jp ENDLESS_LOOP
 
 
 
 RX_CHA_AVAILABLE:
         ex af,af'				 ;save registers
         exx					 ;save registers
+        IN      A,(SIO_DA)      ; read RX character into A
 
-        ld a,(TEXT_COUNTER)
-        inc a
-        ld (TEXT_COUNTER),a
+        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
+        LD      B,0
+        LD      C,A
+        ADC     HL,BC
+        LD      A,(HL)
+    
+        ;out (SIO_DA),a      ; echo char to transmitter
 
-        in a,(SIO_DA)      ; read RX character into A
+        ld  hl,TEXT_BUFFER
+        ld  (hl),a        
+        call  LCD_MESSAGE
 
-        ld hl,SCAN_LOOKUP     ; fetch scancode from lookup table
-        ld b,0
-        ld c,a
-        adc hl,bc
-        ld a,(HL)
-
-
-        out (SIO_DA),a      ; echo char to transmitter
-
-
-        ;ld  hl,TEXT_BUFFER
-        ;ld  (hl),a        
-        ;call  LCD_MESSAGE
-
-        out (lcd_data),a
-        call LCD_WAIT_SHORT
-
-        call TX_EMP          ; wait for outgoing char to be sent
+        ;call LCD_PRINT_CHAR
+        
+END_RX_CHA_AVAILABLE:
+        ;call TX_EMP          ; wait for outgoing char to be sent
         call RX_EMP            ; flush receive buffer
-
-
-
-END_AVAILABLE
         exx					;restore registers
         ex af,af'					;restore registers
 
@@ -84,14 +85,16 @@ SPEC_RX_CONDITON:
 
 
 
+
         include'dtz80-lib.inc'
         include'sio-ctc-init.inc'
 
+
+
+
+
+
 STARTUP_STR:
         db 'dtZ80 Bios V 0.1 >',0
-TEXT_BUFFER:
-        db 0,0,0,0
-TEXT_COUNTER:
-        db 0
-RAMCELL:
-        db 0
+
+  

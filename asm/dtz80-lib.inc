@@ -44,8 +44,6 @@ SOUND_REGISTER
 SOUND_DATA
     equ $81
 
-RAM_COUNTER
-    equ $b000   ; Address for a counter in RAM  
 
 ;Startup command sequence for the lcd:
 ;$3f: Function set: 8-bit interface, 2-line, small font (only 2 or 1 line mode possible)
@@ -82,12 +80,40 @@ numbers:
 message:
     db "HELLO WORLD!",0
 
+
+; variables in ram:
+TEXT_BUFFER:
+        equ $8000
+CURSOR_LINE:
+        equ TEXT_BUFFER + 4
+CURSOR_COLUMN:
+        equ CURSOR_LINE + 1
+RAM_COUNTER
+        equ CURSOR_COLUMN + 1
+; ----
+
 ;subroutines:
 
 ;startup initializations
 startup:
     ld sp,stackpointer
     ret
+
+
+; do a little post message on the seven segment display
+; Sequence: 0 - 1 - 8
+POST:
+    ld a,0
+    call SEGPRINT_NUM
+    call delay
+    ld a,1
+    call SEGPRINT_NUM
+    call delay
+    ld a,8
+    call SEGPRINT_NUM
+    call delay
+    ret
+
 
 ; 3 cascaded 8 bit loops to create some 100ms delay
 DELAY:
@@ -119,6 +145,11 @@ SEGPRINT_NUM:
     out (SEVENSEGO),a
     ret
 
+
+LCD_RESET:
+    out (1),a; LCD RESET LINE A0 = 1
+    call DELAY_SHORT; Wait a little
+    out (0),a; RESET A0 to 0
 
 LCD_SET_RAM_ADDR:
     call LCD_WAIT
@@ -170,8 +201,12 @@ LCD_COM_END2:
 ; Message terminated by 0
 ; Uses HL, AF, BC
 LCD_MESSAGE:
-    ld b,0;column
-    ld c,0;line
+    ld a,(CURSOR_COLUMN)
+    ld b,a;column
+
+    ld a,(CURSOR_LINE)
+    ld c,a;line
+
 LCD_MESSAGE_BEG:
     ld a,(HL)           ;Load character into A
     and a               ;Test for end of string (A=0)
@@ -203,6 +238,21 @@ MESSAGE_RESET_LINE:
     ld c,0; Reset line counter
     jr MESSAGE_NEW_LINE_END
 MESSAGE_END:
+    ; write back current column & line:
+    ld hl,CURSOR_COLUMN
+    ld (hl),b
+    ld hl,CURSOR_LINE
+    ld (hl),c
+    ret
+
+
+; sends A to the LCD on the next 
+; natural LCD pos
+LCD_PRINT_CHAR
+    ; a will be stored in the 573, we have to toggle something after a delay
+    out (lcd_data),a
+    call DELAY_SHORT
+    out (2),a; Sets LCD RW (A1) to Read and therefore acknowledges the last send char
     ret
 
 
@@ -210,19 +260,17 @@ MESSAGE_END:
 ; Expects the pointer in HL
 ; Message terminated by 0
 ; Uses HL, AF
-LCD_MESSAGE_OLD:
+; Does not properly work with 4 line lcd
+LCD_MESSAGE_SIMPLE:
     call LCD_WAIT
     ld a,(HL)           ;Load character into A
     and a               ;Test for end of string (A=0)
-    jr z,MESSAGE_END_OLD
+    jr z,MESSAGE_SIMPLE_END
     out (lcd_data),a    ;Output the character
     inc hl              ;Point to next character
     jr LCD_MESSAGE     ;Loop back for next character
-MESSAGE_END_OLD:
+MESSAGE_SIMPLE_END:
     ret
-
-
-
 
 LCD_CLEAR:
     ld a,$01;
@@ -262,6 +310,17 @@ lcd_wait_loop3:
     jr nz,lcd_wait_loop3
     ld a,0
     out (SEVENSEGO),a;reset output so that the lcd can acknowledge the last value
+    pop af
+    ret
+
+
+; Short delay:
+DELAY_SHORT:
+    push af
+    ld a,$aa
+DELAY_SHORT_LOOP:
+    dec a
+    jr nz,DELAY_SHORT_LOOP
     pop af
     ret
 
@@ -320,6 +379,57 @@ RAM_COUNTER_SEGPRINT:
     out (sevensego),a
     pop af
     ret
+
+; This fills the ram with a starting at hl with a for bc bytes.
+FILL_RAM:
+        ;; HL = start address of block
+        
+
+        ;; DE = HL + 1
+        ld e,l
+        ld d,h
+        inc de
+
+        ;; initialise first byte of block
+        ;; with data byte
+        ld (hl),a
+                
+        ;; BC = length of block in bytes
+        ;; HL+BC-1 = end address of block
+        
+
+        ;; fill memory
+        ldir
+        ret
+;; For each iteration of the LDIR command:
+;;
+;; 1. This command will copy the byte from the memory 
+;; address pointed to by HL to the memory address pointed to by DE.
+;; i.e. (DE) = (HL).
+;; 2. Then HL and DE will be incremented. BC will be decremented.
+;;
+;;
+;; For the first byte:
+;; 
+;; HL = start
+;; DE = start+1
+;; BC = length
+;; (HL)=0
+;; 
+;; For the second byte:
+;; 
+;; HL = start + 1 (initialised to 0 by the previous iteration)
+;; DE = start + 2
+;; BC = length - 1
+;;
+;; For the third byte:
+;;
+;; HL = start + 2 (initialised to 0 by the previous iteration)
+;; DE = start + 3
+;; BC = length - 2
+;;
+;; etc....
+;; ------    
 
 
 ; Lookup table for the keyboard
