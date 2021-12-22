@@ -95,6 +95,6 @@ SPEC_RX_CONDITON:
 
 
 STARTUP_STR:
-        db 'dtZ80 Bios V 0.1 >',0
+        db 'dtZ80 Bios V 0.1>',0
 
   

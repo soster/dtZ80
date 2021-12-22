@@ -45,6 +45,22 @@ SOUND_DATA
     equ $81
 
 
+
+; LCD Commands:
+LCD_COM_CLEAR
+    equ 00000001b
+LCD_COM_HOME
+    equ 00000010b
+LCD_COM_ON_CURSOR
+    equ 00001110b
+LCD_COM_ON_NO_CURSOR
+    equ 00001100b
+LCD_COM_CUR_LEFT
+    equ 00010000b
+LCD_COM_CUR_RIGHT
+    equ 00010100b
+; ----
+
 ;Startup command sequence for the lcd:
 ;$3f: Function set: 8-bit interface, 2-line, small font (only 2 or 1 line mode possible)
 ;$0f: Display on, cursor on (alt: Display on, cursor off = $0C), Display off = $08
@@ -53,16 +69,11 @@ SOUND_DATA
 ;$80: DRAM Counter to 0 ($80+ADDR)
 ;ff terminated.
 LCD_COMMANDS:
-    db $3f,$0c,$01,$80,$ff
+    db $3f,LCD_COM_ON_CURSOR,LCD_COM_CLEAR,$80,$ff
 
-;Startup command sequence for the lcd:
-;$3f: Function set: 8-bit interface, 2-line, small font
-;$0f: Display on, cursor on
-;$01: Clear display
-;$06: Entry mode: left to right, no shift
-;ff terminated.
-LCD_COMMANDS_CURSOR:
-    db $37,$0f,$01,$06,$ff
+
+
+
 
 ; For compatibility with 2 line displays there is some weird adressing going on,
 ; line 2 starts at $40 and line 4 at $54. For a 2 line display use only $00 and $14.
@@ -178,24 +189,6 @@ LCD_COM_END:
     ret
 
 
-
-; Sends the init commands to the lcd
-; Ues HL, AF
-LCD_PREPARE_CURSOR:
-    ld hl,LCD_COMMANDS_CURSOR      ;Address of command list for LCD, $ff terminated
-LCD_COM_LOOP2:
-
-    ld a,(HL)           ;Next command
-    inc a               ;Add 1 so we can test for $ff...
-    jr z,LCD_COM_END2    ;...by testing for zero
-    dec a               ;Restore the actual value
-    out (LCD_COMMAND),a ;Output it.
-    call LCD_WAIT
-    inc hl              ;Next command
-    jr LCD_COM_LOOP2     ;Repeat
-LCD_COM_END2:
-    ret
-
 ; Send a message to the LCD
 ; Expects the pointer in HL
 ; Message terminated by 0
@@ -211,9 +204,35 @@ LCD_MESSAGE_BEG:
     ld a,(HL)           ;Load character into A
     and a               ;Test for end of string (A=0)
     jr z,MESSAGE_END
+
+    inc hl              ;Point to next character
+
+    ; test for special characters:
+    cp CR                       ; a=Enter key?
+    jr z,MESSAGE_NEW_LINE       ; if yes, simulate new line
+    cp BACK_SPACE               ; a=Backspace?
+    jr nz,CONTINUE_SPECIAL1     ; if not, ...
+    dec b                       ; col counter
+    push af                     ; save a!             
+    ld a,LCD_COM_CUR_LEFT
+    out (LCD_COMMAND),a         ;Cursor one left
+    call LCD_WAIT
+    ld a,SPACE
+    out (LCD_DATA),a            ;overwrite character
+    call LCD_WAIT
+    ld a,LCD_COM_CUR_LEFT
+    out (LCD_COMMAND),a         ;again one left
+    call LCD_WAIT
+    pop af                      ;restore a
+    jr LCD_MESSAGE_BEG          ;next char
+
+CONTINUE_SPECIAL1:
+    ; end special characters
+
+
     out (lcd_data),a    ;Output the character
     call LCD_WAIT
-    inc hl              ;Point to next character
+
     inc b               ; INC character counter
     ld a,b             ; Load num of characters into A
     cp $14;            ; $14=first of next line
@@ -325,43 +344,7 @@ DELAY_SHORT_LOOP:
     ret
 
 
-CR  equ 0
-L_SHIFT
-    equ 0
-R_SHIFT
-    equ 0
-CAPS_LOCK
-    equ 0
-NUM_LOCK
-    equ 0
-BACK_SPACE
-    equ $08
-ESC equ 0
-L_CTRL
-    equ 0
-SPACE
-    equ $20
 
-KEY_1
-    equ $16
-KEY_2
-    equ $1e
-KEY_3
-    equ $26
-KEY_4
-    equ $25
-KEY_5
-    equ $2e
-KEY_6
-    equ $36
-KEY_7
-    equ $3d
-KEY_8
-    equ $3e
-KEY_9
-    equ $46
-KEY_0
-    equ $45
 
 ;Increment the counter
 INC_RAM_COUNTER:
@@ -431,6 +414,56 @@ FILL_RAM:
 ;; etc....
 ;; ------    
 
+; Pretend that you have hl and de pointing to the first character, 
+; respectively, of your two strings that you want to compare, 
+; and b holding the length of the strings.
+COMPARE_STRINGS:
+    ld a,(de)
+    cp (hl)
+    ret nz     ;nz means they are not equal
+    inc hl
+    inc de
+    djnz COMPARE_STRINGS
+    or a       ;set the z flag, which means they're equal
+    ret
+
+CR  equ $0d
+L_SHIFT
+    equ 0
+R_SHIFT
+    equ 0
+CAPS_LOCK
+    equ 0
+NUM_LOCK
+    equ 0
+BACK_SPACE
+    equ $08
+ESC equ 0
+L_CTRL
+    equ 0
+SPACE
+    equ $20
+
+KEY_1
+    equ $16
+KEY_2
+    equ $1e
+KEY_3
+    equ $26
+KEY_4
+    equ $25
+KEY_5
+    equ $2e
+KEY_6
+    equ $36
+KEY_7
+    equ $3d
+KEY_8
+    equ $3e
+KEY_9
+    equ $46
+KEY_0
+    equ $45
 
 ; Lookup table for the keyboard
 SCAN_LOOKUP:
