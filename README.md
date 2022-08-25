@@ -53,10 +53,17 @@ The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an e
 ![Parallel Port](/images/parallel-port.png "Parallel Port")
 
 #### Serial Interface
-TODO
+The serial interface is provided by the Z80 SIO chip (SI0/0). It has two channels, A (J1) and B (J6). The clock is provided by the CTC chip for channel A. If you want to use channel B, you have to connect the clock from the pin CTS from J1 to CTS on J6. Please note that RX and TX are labeled from the point of view of the external device, RX is connected to TX on the SIO and vice versa (this maybe was a stupid decistion).
+
+
 
 ### CTC Clock Timer Chip
 TODO
+
+
+
+### PS/2 Keyboard module
+1. connect TX from the module to TX from J1. The module communicates via serial in 19.200 Baud, 1 Stop bit, no parity.
 
 ### Sound
 TODO

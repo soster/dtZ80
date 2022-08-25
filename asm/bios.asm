@@ -29,9 +29,12 @@ MAIN:
         ; clear ram
         ld hl,TEXT_BUFFER
         ld a,0
-        ld bc,$0007
+        ld bc,$0009
         call FILL_RAM
         ; end clear ram
+
+        ld a,00000000b
+        ld (SPECIAL_FLAGS),a; initialize flags, e.g. ascii mode
 
         call LCD_RESET
 
@@ -39,6 +42,10 @@ MAIN:
         call LCD_PREPARE
         ld hl,STARTUP_STR
         call LCD_MESSAGE
+        ld hl,SERIAL_STARTUP_STR
+        call SERIAL_MESSAGE
+
+
 
         ld a,0             	 	; set high byte of interrupt vectors to point to page 0
         ld i,a
@@ -53,26 +60,47 @@ ENDLESS_LOOP:
 
 
 RX_CHA_AVAILABLE:
-        ex af,af'				 ;save registers
-        exx					 ;save registers
-        IN      A,(SIO_DA)      ; read RX character into A
+        ex af,af'		;save registers
+        exx		       ;save registers
+        IN   A,(SIO_DA)        ;read RX character into A        
+        out (SIO_DA),a         ;echo char to transmitter
+        push af
+        call TX_EMP            ; wait for outgoing char to be sent
+        pop af        
+
+        ; FIXME ------------------
+        ld hl,SPECIAL_FLAGS
+        ld b,(hl)    ; test if ascii flag is set
+        bit 0,b                 ; most right bit set?
+        jr nz,CONTINUE_ASCII_MODE; if yes, z is not set...
+
+        cp CR                       ; a=Enter key from serial?
+        jr z,SET_ASCII_FLAG       ; if yes, simulate new line
+        ; FIXME ------------------
 
         LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
         LD      B,0
         LD      C,A
         ADC     HL,BC
         LD      A,(HL)
-    
-        ;out (SIO_DA),a      ; echo char to transmitter
 
+CONTINUE_ASCII_MODE:    
         ld  hl,TEXT_BUFFER
         ld  (hl),a        
         call  LCD_MESSAGE
+        jr END_RX_CHA_AVAILABLE
+SET_ASCII_FLAG:
+        ; TODO
+        LD hl,ASCII_MODE_STR
+        call SERIAL_MESSAGE
+        ; FIXME ------------------
+        ld a,(SPECIAL_FLAGS)       
+        or 00000001b
+        ld (SPECIAL_FLAGS),a
+        ; FIXME ------------------
 
-        ;call LCD_PRINT_CHAR
         
 END_RX_CHA_AVAILABLE:
-        ;call TX_EMP          ; wait for outgoing char to be sent
         call RX_EMP            ; flush receive buffer
         exx					;restore registers
         ex af,af'					;restore registers
@@ -93,8 +121,13 @@ SPEC_RX_CONDITON:
 
 
 
+ASCII_MODE_STR:
+        db #0d,#0a,'dtZ80 serial    >',0
 
 STARTUP_STR:
         db 'dtZ80 Bios V 0.1>',0
+
+SERIAL_STARTUP_STR:
+        db #0d,#0a,'dtZ80 Bios V 0.1 ENTER for serial mode>',0        
 
   

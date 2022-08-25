@@ -83,9 +83,19 @@ SET_SIO:
         ; the following are settings for channel A
         LD      A,01h            ; write into WR0: select WR1
         OUT     (SIO_CA),A
+        
+
         LD      A,00011000b      ; interrupts on every RX char; parity is no special condition;
                                  ; buffer overrun is special condition
+
         OUT     (SIO_CA),A
+        ; the following are settings for channel B
+        LD      A,01h            ; write into WR0: select WR1
+        OUT     (SIO_CB),A
+        LD      A,00000100b      ;no interrupt in CH B, special RX condition affects vect
+        ;LD      A,00011000b      ; interrupts on every RX char; parity is no special condition;
+                                 ; buffer overrun is special condition
+        OUT     (SIO_CB),A        
 SIO_A_EI:
         ;enable SIO channel A RX
         LD      A,00000011b      ; write into WR0: select WR3
@@ -119,6 +129,27 @@ SIO_A_DI:
         LD      A,00001100b      ; write into WR3: RX disable;
         OUT     (SIO_CA),A
         RET
+B_RTS_OFF:
+        LD      A,00000101b      ; write into WR0: select WR5
+        OUT     (SIO_CB),A
+        LD      A,11101000b      ; 8 bits/TX char; TX enable; RTS disable
+        OUT     (SIO_CB),A
+        RET
+
+B_RTS_ON:
+        LD      A,00000101b      ; write into WR0: select WR5
+        OUT     (SIO_CB),A
+        LD      A,11101010b      ; 8 bits/TX char; TX enable; RTS enable
+        OUT     (SIO_CB),A
+        RET
+
+SIO_B_DI:
+        ;disable SIO channel B RX
+        LD      A,00000011b      ; write into WR0: select WR3
+        OUT     (SIO_CB),A
+        LD      A,00001100b      ; write into WR3: RX disable;
+        OUT     (SIO_CB),A
+        RET        
 
 TX_EMP:
         ; check for TX buffer empty

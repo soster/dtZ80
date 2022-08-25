@@ -31,11 +31,11 @@ CTC_CH3
 SIO_CA
     equ $42; SIO Control Channel A
 SIO_CB
-    equ $43; Not used
+    equ $43; SIO Control Channel B
 SIO_DA
     equ $40; SIO Data Channel A
 SIO_DB
-    equ $41; Not used
+    equ $41; SIO Data Channel B
 
 
 ;Soundchip Addresses
@@ -101,6 +101,8 @@ CURSOR_COLUMN:
         equ CURSOR_LINE + 1
 RAM_COUNTER
         equ CURSOR_COLUMN + 1
+SPECIAL_FLAGS
+        equ RAM_COUNTER + 2
 ; ----
 
 ;subroutines:
@@ -225,11 +227,8 @@ LCD_MESSAGE_BEG:
     call LCD_WAIT
     pop af                      ;restore a
     jr LCD_MESSAGE_BEG          ;next char
-
 CONTINUE_SPECIAL1:
     ; end special characters
-
-
     out (lcd_data),a    ;Output the character
     call LCD_WAIT
 
@@ -264,6 +263,18 @@ MESSAGE_END:
     ld (hl),c
     ret
 
+; sends a text in hl to the serial output channel A:
+SERIAL_MESSAGE:
+    ld a,(HL)           ;Load character into A
+    and a               ;Test for end of string (A=0)
+    jr z,SERIAL_MESSAGE_END
+    inc hl              ;Point to next character
+    out (SIO_DA),a      ;echo char to transmitter
+    call TX_EMP         ;empty buffer
+    jr SERIAL_MESSAGE          ;next char
+SERIAL_MESSAGE_END:
+    ret        
+
 
 ; sends A to the LCD on the next 
 ; natural LCD pos
@@ -287,7 +298,7 @@ LCD_MESSAGE_SIMPLE:
     jr z,MESSAGE_SIMPLE_END
     out (lcd_data),a    ;Output the character
     inc hl              ;Point to next character
-    jr LCD_MESSAGE     ;Loop back for next character
+    jr LCD_MESSAGE_SIMPLE     ;Loop back for next character
 MESSAGE_SIMPLE_END:
     ret
 

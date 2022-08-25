@@ -3,6 +3,7 @@
 ; rasm sio-ps2.asm sio-ps2 && minipro -p "at28c256" -w sio-ps2.bin -s
 ; stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb
 ; tio --baudrate 19200 --databits 8 --flow none --stopbits 1 --parity none /dev/ttyS0
+; port can also be /dev/ttyUSB0
 
 ; CTC Addresses
 CTC_CH0 EQU     60h
