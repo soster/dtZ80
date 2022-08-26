@@ -94,16 +94,16 @@ message:
 
 ; variables in ram:
 TEXT_BUFFER:
-        equ $8000
+        equ $8000               ;holds the current character
 CURSOR_LINE:
-        equ TEXT_BUFFER + 4
+        equ TEXT_BUFFER + 4     ;current line of the lcd cursor
 CURSOR_COLUMN:
-        equ CURSOR_LINE + 1
+        equ CURSOR_LINE + 1     ;current column of the lcd cursor
 RAM_COUNTER
-        equ CURSOR_COLUMN + 1
+        equ CURSOR_COLUMN + 1   
 SPECIAL_FLAGS
-        equ RAM_COUNTER + 2
-; ----
+        equ RAM_COUNTER + 2     ;special flags: 01234567
+                                ;7:serial mode (not ps2)
 
 ;subroutines:
 

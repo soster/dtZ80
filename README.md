@@ -1,21 +1,24 @@
 # dtZ80 - A simple 8 Bit Computer based on the Z80 CPU
 
-This started as a project during the second Corona lockdown in Germany.
+This started as a project during the second Corona lockdown, where I had to much free time.
 I wanted to design my own 8 Bit computer and decided to use the Z80 CPU.
 The first idea was to use a MOS 6502 because a variant of that powers the C64, a computer I used much in my childhood.
-The Z80 is easier to source so I used that instead.
+The Z80 is easier to source where I live so I used that instead.
 
 I started on breadboards but quickly discovered the limits of that so I soldered some prototypes and finally designed some PCBs with kicad.
 
 The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.uk/), so I can exchange expansion cards.
 
-This documentation now covers the new "Black Edition", a board without the need to use extension cards.
+This documentation now covers the new "Black Edition", a larger board without the need to use extension cards. Previous prototypes had a common bus board and extension cards for the CPU, RAM etc.
+
+The dtZ80 uses a Z80 CPU with clocked with 7.3728 Mhz (which doubles as a clock for serial communication), a Z80 SIO for serial communication, a CTC counter timer, 32kb of RAM and 32kb of ROM and a AY-3-8910A sound chip. It uses a single seven segment display for debugging purposes and a 4 line, 20 characters per line LCD for text output.
 
 
 ## Tools
 * [rasm](https://github.com/mkoloberdin/rasm) is used as the assembler.
 * [Visual Studio Code](https://code.visualstudio.com/) is used as an editor and enviroment for assembler
 * [Minipro](https://gitlab.com/DavidGriffith/minipro/) is used to flash the EEPROMs, the hardware is a TL866 II PLUS
+* A usb to ttl converter for serial communication (can be switched to 5V levels, only needs TX and RX)
 
 ## Images
 
@@ -23,6 +26,9 @@ This documentation now covers the new "Black Edition", a board without the need 
 
 
 ### Address Space
+Address lines are assigned by a 74LS138 IC (U6) which activates
+or deactivates the correct ICs.
+
     $00: I/O port 7 segment (A0-A7=0)
     $04: LCD command I/O port (A5=1)
     $05: LCD data I/O port (A5=1,A0=1)
@@ -63,7 +69,10 @@ TODO
 
 
 ### PS/2 Keyboard module
+For ps/2 keyboard to serial conversion I use a "PS2 Keyboard Driver Serial Port Transmission Module".
+ 
 1. connect TX from the module to TX from J1. The module communicates via serial in 19.200 Baud, 1 Stop bit, no parity.
+
 
 ### Sound
 TODO
