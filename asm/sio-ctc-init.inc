@@ -1,4 +1,6 @@
-;-------------------------------------------------
+;Init CTC and SIO chips.
+;included in the dtZ80 bios.
+;TODO use the second SIO channel.
 SET_CTC:
 ;init CTC_CH0
 ;Information from the datasheet:

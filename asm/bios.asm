@@ -45,8 +45,6 @@ MAIN:
         ld hl,SERIAL_STARTUP_STR
         call SERIAL_MESSAGE
 
-
-
         ld a,0             	 	; set high byte of interrupt vectors to point to page 0
         ld i,a
 
@@ -57,77 +55,76 @@ MAIN:
 ENDLESS_LOOP:        
         jp ENDLESS_LOOP
 
-
-
+;Character over serial arrives.
+;Can be either via the ps2 keyboard adapter
+;Or via a serial connection to another device.
 RX_CHA_AVAILABLE:
-        ex af,af'		;save registers
-        exx		       ;save registers
-        IN   A,(SIO_DA)        ;read RX character into A        
-        out (SIO_DA),a         ;echo char to transmitter
-        push af
-        call TX_EMP            ; wait for outgoing char to be sent
-        pop af        
+        ex af,af'	        ;save registers
+        exx		        ;save registers
+        IN   A,(SIO_DA)         ;read RX character into A        
+    
+        ld hl,SPECIAL_FLAGS     ; load address of special_flags into hl
+        ld b,(hl)               ; load value of address into b
+        bit 0,b                 ; most right bit set in value?
+        jr nz,CONTINUE_SERIAL_MODE; if yes, z is not set, serial_mode...
 
-        ; FIXME ------------------
-        ld hl,SPECIAL_FLAGS
-        ld b,(hl)    ; test if ascii flag is set
-        bit 0,b                 ; most right bit set?
-        jr nz,CONTINUE_ASCII_MODE; if yes, z is not set...
+        cp CR                      ; a=Enter key from serial?
+        jr z,SET_SERIAL_FLAG       ; if yes, set serial flag...
 
-        cp CR                       ; a=Enter key from serial?
-        jr z,SET_ASCII_FLAG       ; if yes, simulate new line
-        ; FIXME ------------------
-
+; PS2 Mode:
         LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
-        LD      B,0
-        LD      C,A
-        ADC     HL,BC
+        LD      B,0                ; only use 8 bits from 16
+        LD      C,A                ;BC, Low Byte
+        ADC     HL,BC              ;Add BC to HL
         LD      A,(HL)
+        JR CONTINUE_COMMON_MODE
 
-CONTINUE_ASCII_MODE:    
-        ld  hl,TEXT_BUFFER
-        ld  (hl),a        
-        call  LCD_MESSAGE
+CONTINUE_SERIAL_MODE:
+        out (SIO_DA),a          ;echo char to transmitter
+        cp CR                   ;Enter?
+        jr nz, NO_LF            ;If not, continue with NO_LF
+        ld a,LF                 ;Load LF
+        out (SIO_DA),a          ;Echo LF to serial
+NO_LF:
+        push af
+        call TX_EMP             ; wait for outgoing char to be sent
+        pop af    
+
+; common code for serial and ps2:
+CONTINUE_COMMON_MODE:    
+        ld  hl,TEXT_BUFFER      ;Load address of text_buffer into hl
+        ld  (hl),a              ;Load value of text_buffer into a
+        call  LCD_MESSAGE       ;echo a to LCD
         jr END_RX_CHA_AVAILABLE
-SET_ASCII_FLAG:
-        ; TODO
-        LD hl,ASCII_MODE_STR
+SET_SERIAL_FLAG:
+        LD hl,SERIAL_MODE_STR   
         call SERIAL_MESSAGE
-        ; FIXME ------------------
         ld a,(SPECIAL_FLAGS)       
-        or 00000001b
+        or 00000001b            ;set flag for serial mode
         ld (SPECIAL_FLAGS),a
-        ; FIXME ------------------
 
-        
 END_RX_CHA_AVAILABLE:
-        call RX_EMP            ; flush receive buffer
-        exx					;restore registers
-        ex af,af'					;restore registers
-
+        call RX_EMP             ;flush receive buffer
+        call TX_EMP             ;flush send buffer
+        exx		        ;restore registers
+        ex af,af'		;restore registers
         ei
         reti
 
 SPEC_RX_CONDITON:
         jp $0000            ; if buffer overrun then restart the program
 
-
-
-
         include'dtz80-lib.inc'
         include'sio-ctc-init.inc'
 
 
-
-
-
-ASCII_MODE_STR:
-        db #0d,#0a,'dtZ80 serial    >',0
+SERIAL_MODE_STR:
+        db CR,LF,'dtZ80 serial>',0
 
 STARTUP_STR:
-        db 'dtZ80 Bios V 0.1>',0
+        db 'dtZ80 Bios V 0.1>',CR,0
 
 SERIAL_STARTUP_STR:
-        db #0d,#0a,'dtZ80 Bios V 0.1 ENTER for serial mode>',0        
+        db CR,LF,'dtZ80 Bios V 0.1 ENTER for serial mode>',0        
 
   

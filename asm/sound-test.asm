@@ -1,7 +1,7 @@
 ;sound-test.asm
 ;Test dtz80 sound capability
 ;Needs RAM
-; rasm sound-test.asm sound-test && minipro -p "at28c256" -w sound-test.bin -s
+;rasm sound-test.asm sound-test && minipro -p "at28c256" -w sound-test.bin -s
 
 
 

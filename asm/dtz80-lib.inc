@@ -439,6 +439,7 @@ COMPARE_STRINGS:
     ret
 
 CR  equ $0d
+LF  equ $0a
 L_SHIFT
     equ 0
 R_SHIFT
