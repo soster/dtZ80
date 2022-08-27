@@ -171,7 +171,7 @@ LOUT2:
 	jr nz,LOUT2
 	out (C),a
 
-	ld hl,(STOP_STR
+	ld hl,(STOP_STR)
 	call LCD_MESSAGE
 
 SELECT_SPACE_LOOP:

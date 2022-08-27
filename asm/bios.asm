@@ -38,7 +38,7 @@ MAIN:
 
         call LCD_RESET
 
- 
+
         call LCD_PREPARE
         ld hl,STARTUP_STR
         call LCD_MESSAGE
@@ -52,7 +52,7 @@ MAIN:
         ei                      ; enable interupt
 
 
-ENDLESS_LOOP:        
+ENDLESS_LOOP:
         jp ENDLESS_LOOP
 
 ;Character over serial arrives.
@@ -61,8 +61,8 @@ ENDLESS_LOOP:
 RX_CHA_AVAILABLE:
         ex af,af'	        ;save registers
         exx		        ;save registers
-        IN   A,(SIO_DA)         ;read RX character into A        
-    
+        in a,(SIO_DA)         ;read RX character into A        
+
         ld hl,SPECIAL_FLAGS     ; load address of special_flags into hl
         ld b,(hl)               ; load value of address into b
         bit 0,b                 ; most right bit set in value?
@@ -72,34 +72,34 @@ RX_CHA_AVAILABLE:
         jr z,SET_SERIAL_FLAG       ; if yes, set serial flag...
 
 ; PS2 Mode:
-        LD      HL,SCAN_LOOKUP     ; fetch scancode from lookup table
-        LD      B,0                ; only use 8 bits from 16
-        LD      C,A                ;BC, Low Byte
-        ADC     HL,BC              ;Add BC to HL
-        LD      A,(HL)
-        JR CONTINUE_COMMON_MODE
+        ld hl,SCAN_LOOKUP     ; fetch scancode from lookup table
+        ld b,0                ; only use 8 bits from 16
+        ld c,a                ;BC, Low Byte
+        adc hl,bc              ;Add BC to HL
+        ld a,(HL)
+        jr CONTINUE_COMMON_MODE
 
 CONTINUE_SERIAL_MODE:
         out (SIO_DA),a          ;echo char to transmitter
         cp CR                   ;Enter?
-        jr nz, NO_LF            ;If not, continue with NO_LF
+        jr nz,NO_LF            ;If not, continue with NO_LF
         ld a,LF                 ;Load LF
         out (SIO_DA),a          ;Echo LF to serial
 NO_LF:
         push af
         call TX_EMP             ; wait for outgoing char to be sent
-        pop af    
+        pop af
 
 ; common code for serial and ps2:
-CONTINUE_COMMON_MODE:    
-        ld  hl,TEXT_BUFFER      ;Load address of text_buffer into hl
-        ld  (hl),a              ;Load value of text_buffer into a
-        call  LCD_MESSAGE       ;echo a to LCD
+CONTINUE_COMMON_MODE:
+        ld hl,TEXT_BUFFER      ;Load address of text_buffer into hl
+        ld (hl),a              ;Load value of text_buffer into a
+        call LCD_MESSAGE       ;echo a to LCD
         jr END_RX_CHA_AVAILABLE
 SET_SERIAL_FLAG:
-        LD hl,SERIAL_MODE_STR   
+        ld hl,SERIAL_MODE_STR
         call SERIAL_MESSAGE
-        ld a,(SPECIAL_FLAGS)       
+        ld a,(SPECIAL_FLAGS)
         or 00000001b            ;set flag for serial mode
         ld (SPECIAL_FLAGS),a
 
@@ -110,6 +110,18 @@ END_RX_CHA_AVAILABLE:
         ex af,af'		;restore registers
         ei
         reti
+
+; sends a text in hl to the serial output channel A:
+SERIAL_MESSAGE:
+    ld a,(HL)           ;Load character into A
+    and a               ;Test for end of string (A=0)
+    jr z,SERIAL_MESSAGE_END
+    inc hl              ;Point to next character
+    out (SIO_DA),a      ;echo char to transmitter
+    call TX_EMP         ;empty buffer
+    jr SERIAL_MESSAGE          ;next char
+SERIAL_MESSAGE_END:
+    ret
 
 SPEC_RX_CONDITON:
         jp $0000            ; if buffer overrun then restart the program
@@ -125,6 +137,6 @@ STARTUP_STR:
         db 'dtZ80 Bios V 0.1>',CR,0
 
 SERIAL_STARTUP_STR:
-        db CR,LF,'dtZ80 Bios V 0.1 ENTER for serial mode>',0        
+        db CR,LF,'dtZ80 Bios V 0.1 ENTER for serial mode>',0
 
-  
+

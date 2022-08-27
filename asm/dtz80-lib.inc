@@ -94,15 +94,15 @@ message:
 
 ; variables in ram:
 TEXT_BUFFER:
-        equ $8000               ;holds the current character
+    equ $8000               ;holds the current character
 CURSOR_LINE:
-        equ TEXT_BUFFER + 4     ;current line of the lcd cursor
+    equ TEXT_BUFFER + 4     ;current line of the lcd cursor
 CURSOR_COLUMN:
-        equ CURSOR_LINE + 1     ;current column of the lcd cursor
+    equ CURSOR_LINE + 1     ;current column of the lcd cursor
 RAM_COUNTER
-        equ CURSOR_COLUMN + 1   
+    equ CURSOR_COLUMN + 1
 SPECIAL_FLAGS
-        equ RAM_COUNTER + 2     ;special flags: 01234567
+    equ RAM_COUNTER + 2     ;special flags: 01234567
                                 ;7:serial mode (not ps2)
 
 ;subroutines:
@@ -263,17 +263,7 @@ MESSAGE_END:
     ld (hl),c
     ret
 
-; sends a text in hl to the serial output channel A:
-SERIAL_MESSAGE:
-    ld a,(HL)           ;Load character into A
-    and a               ;Test for end of string (A=0)
-    jr z,SERIAL_MESSAGE_END
-    inc hl              ;Point to next character
-    out (SIO_DA),a      ;echo char to transmitter
-    call TX_EMP         ;empty buffer
-    jr SERIAL_MESSAGE          ;next char
-SERIAL_MESSAGE_END:
-    ret        
+
 
 
 ; sends A to the LCD on the next 
@@ -377,24 +367,24 @@ RAM_COUNTER_SEGPRINT:
 ; This fills the ram with a starting at hl with a for bc bytes.
 FILL_RAM:
         ;; HL = start address of block
-        
+
 
         ;; DE = HL + 1
-        ld e,l
-        ld d,h
-        inc de
+    ld e,l
+    ld d,h
+    inc de
 
         ;; initialise first byte of block
         ;; with data byte
-        ld (hl),a
-                
+    ld (hl),a
+
         ;; BC = length of block in bytes
         ;; HL+BC-1 = end address of block
-        
+
 
         ;; fill memory
-        ldir
-        ret
+    ldir
+    ret
 ;; For each iteration of the LDIR command:
 ;;
 ;; 1. This command will copy the byte from the memory 
