@@ -9,15 +9,17 @@ I started on breadboards but quickly discovered the limits of that so I soldered
 
 The bus is compatible to the Bus of the [RC2014 Z80 computer](https://rc2014.co.uk/), so I can exchange expansion cards.
 
-This documentation now covers the new "Black Edition", a larger board without the need to use extension cards. Previous prototypes had a common bus board and extension cards for the CPU, RAM etc.
+This documentation now covers the new "Black Edition" of the dtZ80 (Rev 1), a larger board without the need to use extension cards. Previous prototypes had a common bus board and extension cards for the CPU, RAM etc. All software for the previous prototypes can be found at `asm/prototype` for historical reasons.
 
 The dtZ80 uses a Z80 CPU with clocked with 7.3728 Mhz (which doubles as a clock for serial communication), a Z80 SIO for serial communication, a CTC counter timer, 32kb of RAM and 32kb of ROM and a AY-3-8910A sound chip. It uses a single seven segment display for debugging purposes and a 4 line, 20 characters per line LCD for text output.
 
 
 ## Tools
+
 * [rasm](https://github.com/mkoloberdin/rasm) is used as the assembler.
 * [Visual Studio Code](https://code.visualstudio.com/) is used as an editor and enviroment for assembler
 * [Minipro](https://gitlab.com/DavidGriffith/minipro/) is used to flash the EEPROMs, the hardware is a TL866 II PLUS
+* [z80pack](https://github.com/udo-munk/z80pack) is used for Z80 simulation (z80sim)
 * A usb to ttl converter for serial communication (can be switched to 5V levels, only needs TX and RX)
 
 ## Images
@@ -26,6 +28,7 @@ The dtZ80 uses a Z80 CPU with clocked with 7.3728 Mhz (which doubles as a clock 
 
 
 ### Address Space
+
 Address lines are assigned by a 74LS138 IC (U6) which activates
 or deactivates the correct ICs.
 
@@ -43,6 +46,7 @@ or deactivates the correct ICs.
 
 
 #### LCD
+
 The black edition uses a 4 line, 20 column LCD Display (2004A V1.1) probably based on the HD44780 Chip [(Datasheet)](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf).
 It behaves strangely if we send character by character to it, it uses line 3 after line 1 and the lines 2 and 4 are not usable. We have to manually set the DDRAM address holding the character position according to the current line:
 
@@ -54,38 +58,46 @@ It behaves strangely if we send character by character to it, it uses line 3 aft
 I assume this is due to backwarts compatibility to 2 line displays.
 
 #### Parallel Interface
+
 The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an error while designing the pcb, it has the following pins (GND=Pin 1):
 
 ![Parallel Port](/images/parallel-port.png "Parallel Port")
 
 #### Serial Interface
+
 The serial interface is provided by the Z80 SIO chip (SI0/0). It has two channels, A (J1) and B (J6). The clock is provided by the CTC chip for channel A. If you want to use channel B, you have to connect the clock from the pin CTS from J1 to CTS on J6. Please note that RX and TX are labeled from the point of view of the external device, RX is connected to TX on the SIO and vice versa (this maybe was a stupid decistion).
 
 
 
 ### CTC Clock Timer Chip
+
 TODO
 
 
 
 ### PS/2 Keyboard module
+
 For ps/2 keyboard to serial conversion I use a "PS2 Keyboard Driver Serial Port Transmission Module".
  
 1. connect TX from the module to TX from J1. The module communicates via serial in 19.200 Baud, 1 Stop bit, no parity.
 
 
 ### Sound
+
 TODO
 
-
+### z80sim
+This is the simulation tool which can avoid many round trips flashing the EEPROM and debugging on the device. Note: It needs the hex format.
 
 
 ## Next steps / TODOs
 
-Document the new, integrated "Black Edition"!
+* Further develop the bios
+* Document all features
 
 
 ### Graphics
+
 Graphics is not finished yet. These are some ideas:
 Based on: TMS9918A
 Problem: Works only with DRAM for SRAM
