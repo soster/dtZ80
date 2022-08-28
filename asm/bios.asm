@@ -1,5 +1,7 @@
 ;BIOS for my dtz80 Z80 computer
 ;rasm bios.asm bios && minipro -p "at28c256" -w bios.bin -s
+;assemble with symbols:
+;rasm -s -sa bios.asm bios
 
 RESET:
         org 0
@@ -27,9 +29,9 @@ MAIN:
         call POST
 
         ; clear ram
-        ld hl,TEXT_BUFFER
+        ld hl,CHAR_BUFFER
         ld a,0
-        ld bc,$0009
+        ld bc,FILL_RAM_SIZE
         call FILL_RAM
         ; end clear ram
 
@@ -80,21 +82,11 @@ RX_CHA_AVAILABLE:
         jr CONTINUE_COMMON_MODE
 
 CONTINUE_SERIAL_MODE:
-        out (SIO_DA),a          ;echo char to transmitter
-        cp CR                   ;Enter?
-        jr nz,NO_LF            ;If not, continue with NO_LF
-        ld a,LF                 ;Load LF
-        out (SIO_DA),a          ;Echo LF to serial
-NO_LF:
-        push af
-        call TX_EMP             ; wait for outgoing char to be sent
-        pop af
-
 ; common code for serial and ps2:
 CONTINUE_COMMON_MODE:
-        ld hl,TEXT_BUFFER      ;Load address of text_buffer into hl
-        ld (hl),a              ;Load value of text_buffer into a
-        call LCD_MESSAGE       ;echo a to LCD
+        ld hl,CHAR_BUFFER      ;Load address of CHAR_BUFFER into hl
+        ld (hl),a              ;Load value of CHAR_BUFFER into a        
+        call NEW_CHARACTER     ;Handle new entered character in a
         jr END_RX_CHA_AVAILABLE
 SET_SERIAL_FLAG:
         ld hl,SERIAL_MODE_STR
@@ -105,11 +97,23 @@ SET_SERIAL_FLAG:
 
 END_RX_CHA_AVAILABLE:
         call RX_EMP             ;flush receive buffer
-        call TX_EMP             ;flush send buffer
         exx		        ;restore registers
         ex af,af'		;restore registers
         ei
         reti
+
+; new character in a
+NEW_CHARACTER:
+        out (SIO_DA),a
+        cp CR                   ;Enter?
+        jr nz,NO_LF            ;If not, continue with NO_LF
+        ld a,LF
+        out (SIO_DA),a
+NO_LF:        
+        call LCD_MESSAGE       ;echo a to LCD       
+        call TX_EMP
+        ret
+
 
 ; sends a text in hl to the serial output channel A:
 SERIAL_MESSAGE:
@@ -124,7 +128,10 @@ SERIAL_MESSAGE_END:
         ret
 
 SPEC_RX_CONDITON:
-        jp $0000            ; if buffer overrun then restart the program
+        ;jp $0000            ; if buffer overrun then restart the program
+        call RX_EMP
+        call TX_EMP
+        reti
 
         include 'dtz80-lib.inc'
         include 'lcd-lib.inc'
@@ -135,7 +142,7 @@ SERIAL_MODE_STR:
         db CR,LF,'dtZ80 serial>',0
 
 STARTUP_STR:
-        db 'dtZ80 Bios V 0.1>',CR,0
+        db 'dtZ80 Bios V 0.1>',0
 
 SERIAL_STARTUP_STR:
         db CR,LF,'dtZ80 Bios V 0.1 ENTER for serial mode>',0

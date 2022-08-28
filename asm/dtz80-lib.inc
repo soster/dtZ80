@@ -85,19 +85,33 @@ KEY_0
 numbers:
     db $3f,$6,$5b,$4f,$66,$6d,$7d,$7,$7f,$6f,0    
 
+; opcodes
+OC_CLEAR:
+    db "CL"
+OC_VERSION
+    db "VS"
+OC_RESET
+    db "RS"
+
 
 ; variables in ram:
-TEXT_BUFFER:
-    equ $8000               ;holds the current character
+CHAR_BUFFER:
+    equ $8000               ;holds the current character + 0 (2 Bytes!)
 CURSOR_LINE:
-    equ TEXT_BUFFER + 4     ;current line of the lcd cursor
+    equ CHAR_BUFFER + 2     ;current line of the lcd cursor
 CURSOR_COLUMN:
     equ CURSOR_LINE + 1     ;current column of the lcd cursor
-RAM_COUNTER
-    equ CURSOR_COLUMN + 1
 SPECIAL_FLAGS
-    equ RAM_COUNTER + 2     ;special flags: 01234567
+    equ CURSOR_COLUMN + 1     ;special flags: 01234567
                                 ;7:serial mode (not ps2)
+LINE_BUFFER:                ;20 characters
+    equ SPECIAL_FLAGS + 1;
+LAST_OPCODE:
+    equ LINE_BUFFER + 20;
+FILL_RAM_SIZE
+    equ 2+1+1+1+20
+
+
 
 ;subroutines:
 
@@ -165,25 +179,6 @@ DELAY_SHORT_LOOP:
     pop af
     ret
 
-
-
-
-;Increment the counter
-INC_RAM_COUNTER:
-    push af     ;save af
-    ld a,(ram_counter)
-    inc a
-    ld (ram_counter),a
-    pop af
-    ret
-
-;print ram counter to seven segment
-RAM_COUNTER_SEGPRINT:
-    push af
-    ld a,(ram_counter)
-    out (sevensego),a
-    pop af
-    ret
 
     
     include 'tools.inc'; algorithms / subroutines
