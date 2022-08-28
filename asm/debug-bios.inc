@@ -8,17 +8,22 @@
 		
 	ld hl,STARTUP_STR
 	call LCD_MESSAGE
+	
 	ld a,CR;activates serial mode
 	call RX_CHA_AVAILABLE
-	ld a,'t'
+	ld hl,TEST_STR
+    
+BEGIN_TEST:	
+	ld a,(HL)           ;Load character into A
+    and a               ;Test for end of string (A=0)
+    jr z,TEST_END		;If 0 then end.
+	push hl
 	call RX_CHA_AVAILABLE
-	ld a,'e'
-	call RX_CHA_AVAILABLE
-	ld a,'s'
-	call RX_CHA_AVAILABLE
-	ld a,'t'
-	call RX_CHA_AVAILABLE
-	ld a,CR
-	ld a,LF
-	call RX_CHA_AVAILABLE
-	halt
+	pop hl
+	inc hl				;Next character
+	jr BEGIN_TEST		;Continue loop
+TEST_END:
+	halt	
+
+TEST_STR:
+        db 'Dies ist ein Test.',CR,LF,'Und noch so ein Test.',CR,LF,0
