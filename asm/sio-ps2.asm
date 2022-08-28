@@ -1,4 +1,4 @@
-; Init and test SIO & CTC Chip (Complete Version)
+; Init and test SIO & CTC Chip (No includes)
 ; PS/2 Interface via SIO
 ; rasm sio-ps2.asm sio-ps2 && minipro -p "at28c256" -w sio-ps2.bin -s
 ; stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb

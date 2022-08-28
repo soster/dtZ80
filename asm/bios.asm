@@ -113,21 +113,22 @@ END_RX_CHA_AVAILABLE:
 
 ; sends a text in hl to the serial output channel A:
 SERIAL_MESSAGE:
-    ld a,(HL)           ;Load character into A
-    and a               ;Test for end of string (A=0)
-    jr z,SERIAL_MESSAGE_END
-    inc hl              ;Point to next character
-    out (SIO_DA),a      ;echo char to transmitter
-    call TX_EMP         ;empty buffer
-    jr SERIAL_MESSAGE          ;next char
+        ld a,(HL)           ;Load character into A
+        and a               ;Test for end of string (A=0)
+        jr z,SERIAL_MESSAGE_END
+        inc hl              ;Point to next character
+        out (SIO_DA),a      ;echo char to transmitter
+        call TX_EMP         ;empty buffer
+        jr SERIAL_MESSAGE          ;next char
 SERIAL_MESSAGE_END:
-    ret
+        ret
 
 SPEC_RX_CONDITON:
         jp $0000            ; if buffer overrun then restart the program
 
-        include'dtz80-lib.inc'
-        include'sio-ctc-init.inc'
+        include 'dtz80-lib.inc'
+        include 'lcd-lib.inc'
+        include 'sio-ctc-init.inc'
 
 
 SERIAL_MODE_STR:

@@ -17,5 +17,5 @@
 start_message:
     db  "1: 20 characters...12: 20 characters...23: 20 characters...34: 20 characters...45: 20 characters...5",0
 
-    ;using no space finally stops the formatter to insert a false line break here:
-    include"dtz80-lib.inc"
+    include 'dtz80-lib.inc'    
+    include 'lcd-lib.inc'

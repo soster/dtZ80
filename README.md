@@ -86,8 +86,17 @@ For ps/2 keyboard to serial conversion I use a "PS2 Keyboard Driver Serial Port 
 
 TODO
 
-### z80sim
-This is the simulation tool which can avoid many round trips flashing the EEPROM and debugging on the device. Note: It needs the hex format.
+
+### Simulator
+
+The simulator `ticks` from [https://github.com/z88dk/z88dk](z88dk) can be used as a simulator. It provides character output for debugging purposes. Use it like this on assembled binary files:
+
+```
+z88dk.z88dk-ticks -iochar 5 bios.bin
+```
+`-iochar 5` puts out characters just like for the LCD of the dtz80.
+
+Note that there is a bug preventing it from outputting characters right now, use this fork if it is not fixed yet: https://github.com/soster/z88dk
 
 
 ## Next steps / TODOs
