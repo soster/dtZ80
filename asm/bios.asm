@@ -2,12 +2,21 @@
 ;rasm bios.asm bios && minipro -p "at28c256" -w bios.bin -s
 ;assemble with symbols:
 ;rasm -s -sa bios.asm bios
+;debugging with z88dk ticks:
+;z88dk.ticks -iochar 5 bios.bin
+
+;set debug=1 for simulator debugging in ticks:
+DEBUG=0
 
 RESET:
         org 0
-        jp MAIN
-
-
+if DEBUG        
+print "**DEBUG MODE**"
+        jp MAIN_DEBUG
+else
+print "**PRODUCTION MODE**"
+        jp MAIN        
+endif
         ; interrupt vector for SIO
         org $0c
         defw RX_CHA_AVAILABLE
@@ -15,6 +24,7 @@ RESET:
         defw SPEC_RX_CONDITON
 
 ;---------------------------------------------------
+ifnot DEBUG
         ; Main code
         org $0100           ; main code starts at $0100 because of interrupt vector!
 MAIN:
@@ -28,15 +38,7 @@ MAIN:
 
         call POST
 
-        ; clear ram
-        ld hl,CHAR_BUFFER
-        ld a,0
-        ld bc,FILL_RAM_SIZE
-        call FILL_RAM
-        ; end clear ram
-
-        ld a,00000000b
-        ld (SPECIAL_FLAGS),a; initialize flags, e.g. ascii mode
+        call INIT_RAM
 
         call LCD_RESET
 
@@ -53,17 +55,44 @@ MAIN:
         im 2               		; set int mode 2
         ei                      ; enable interupt
 
-
 ENDLESS_LOOP:
         jp ENDLESS_LOOP
+endif
 
+;for debugging purposes:
+if DEBUG
+        org $0100
+MAIN_DEBUG:                
+        include 'debug-bios.inc'
+endif
+
+
+INIT_RAM:
+        ; clear ram
+        ld hl,CHAR_BUFFER
+        ld a,0
+        ld bc,FILL_RAM_SIZE
+        call FILL_RAM
+        ret
+        ; end clear ram
+
+
+
+
+
+;-----------------------------
 ;Character over serial arrives.
 ;Can be either via the ps2 keyboard adapter
 ;Or via a serial connection to another device.
+;ps/2 needs special mapping of characters.
+;SPECIAL_FLAGS bit 0 = 1 if serial.
 RX_CHA_AVAILABLE:
+ifnot DEBUG
         ex af,af'	        ;save registers
         exx		        ;save registers
         in a,(SIO_DA)         ;read RX character into A        
+endif        
+        
 
         ld hl,SPECIAL_FLAGS     ; load address of special_flags into hl
         ld b,(hl)               ; load value of address into b
@@ -85,7 +114,7 @@ CONTINUE_SERIAL_MODE:
 ; common code for serial and ps2:
 CONTINUE_COMMON_MODE:
         ld hl,CHAR_BUFFER      ;Load address of CHAR_BUFFER into hl
-        ld (hl),a              ;Load value of CHAR_BUFFER into a        
+        ld (hl),a              ;Load value of a into CHAR_BUFFER        
         call NEW_CHARACTER     ;Handle new entered character in a
         jr END_RX_CHA_AVAILABLE
 SET_SERIAL_FLAG:
@@ -96,23 +125,28 @@ SET_SERIAL_FLAG:
         ld (SPECIAL_FLAGS),a
 
 END_RX_CHA_AVAILABLE:
+ifnot DEBUG
         call RX_EMP             ;flush receive buffer
         exx		        ;restore registers
         ex af,af'		;restore registers
         ei
         reti
+else        
+        ret
+endif
 
-; new character in a
+; new character in a and (hl)
 NEW_CHARACTER:
-        out (SIO_DA),a
-        cp CR                   ;Enter?
+        out (SIO_DA),a         ;output character to serial
+        cp CR                  ;Enter?
         jr nz,NO_LF            ;If not, continue with NO_LF
-        ld a,LF
-        out (SIO_DA),a
-NO_LF:        
+        ld a,LF                ;a=line feed
+        out (SIO_DA),a         ;output additional LF to serial
+NO_LF:                         ;skip line feed
         call LCD_MESSAGE       ;echo a to LCD       
         call TX_EMP
         ret
+;-----------------------------
 
 
 ; sends a text in hl to the serial output channel A:
