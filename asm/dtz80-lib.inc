@@ -102,14 +102,16 @@ CURSOR_LINE:
 CURSOR_COLUMN:
     equ CURSOR_LINE + 1     ;current column of the lcd cursor
 SPECIAL_FLAGS
-    equ CURSOR_COLUMN + 1     ;special flags: 01234567
-                                ;7:serial mode (not ps2)
+    equ CURSOR_COLUMN + 1   ;special flags: 76543210
+                            ;0:serial mode (not ps2)
 LINE_BUFFER:                ;20 characters
-    equ SPECIAL_FLAGS + 1;
-LAST_OPCODE:
+    equ SPECIAL_FLAGS + 1
+LAST_OPCODE:                ;opcode always 2 characters, no leading zero
     equ LINE_BUFFER + 20;
-FILL_RAM_SIZE
-    equ 2+1+1+1+20
+CHAR_COUNTER:
+    equ LAST_OPCODE + 2;
+FILL_RAM_SIZE               ;how many bytes do we have to initialize?             
+    equ CHAR_COUNTER+1-CHAR_BUFFER
 
 
 

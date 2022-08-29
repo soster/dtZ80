@@ -1,4 +1,7 @@
 rasmoutput.bin
 schema-backup
 *.bin
+*.hex
+*.sym
+.ticks_history.txt
 asm/player.err

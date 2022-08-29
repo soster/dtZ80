@@ -4,9 +4,11 @@
 ;rasm -s -sa bios.asm bios
 ;debugging with z88dk ticks:
 ;z88dk.ticks -iochar 5 bios.bin
+;with symbols:
+;z88dk.ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
 
 ;set debug=1 for simulator debugging in ticks:
-DEBUG=0
+DEBUG=1
 
 RESET:
         org 0
@@ -15,7 +17,7 @@ print "**DEBUG MODE**"
         jp MAIN_DEBUG
 else
 print "**PRODUCTION MODE**"
-        jp MAIN        
+        jp MAIN
 endif
         ; interrupt vector for SIO
         org $0c
@@ -59,7 +61,7 @@ ENDLESS_LOOP:
         jp ENDLESS_LOOP
 endif
 
-;for debugging purposes:
+;for debugging / simulation purposes:
 if DEBUG
         org $0100
 MAIN_DEBUG:                
@@ -143,11 +145,30 @@ NEW_CHARACTER:
         ld a,LF                ;a=line feed
         out (SIO_DA),a         ;output additional LF to serial
 NO_LF:                         ;skip line feed
+        call STORE_OPCODE
         call LCD_MESSAGE       ;echo a to LCD       
         call TX_EMP
         ret
 ;-----------------------------
 
+; Stores the character in CHAR_BUFFER
+; Into (LAST_OPCODE + CHAR_COUNTER)
+STORE_OPCODE:
+        push hl
+        ld a,(CHAR_COUNTER)
+        ld hl,LAST_OPCODE
+        ld b,0
+        ld c,a
+        adc hl,bc               ; add CHAR_COUNTER to LAST_OPCODE
+        ld a,(CHAR_BUFFER)
+        ld (hl),a               ; Put current char into LAST_OPCODE
+        ld a,(CHAR_COUNTER)
+        xor 1                   ; 2 bytes OPCODE, CHAR_COUNTER can be 0 or 1
+        ld (CHAR_COUNTER),a     ; store xored CHAR_COUNTER
+        ;TODO: if CHAR_COUNTER = 1 then check OPCODE.
+
+        pop hl
+        ret
 
 ; sends a text in hl to the serial output channel A:
 SERIAL_MESSAGE:
@@ -170,7 +191,6 @@ SPEC_RX_CONDITON:
         include 'dtz80-lib.inc'
         include 'lcd-lib.inc'
         include 'sio-ctc-init.inc'
-
 
 SERIAL_MODE_STR:
         db CR,LF,'dtZ80 serial>',0
