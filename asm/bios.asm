@@ -8,15 +8,15 @@
 ;z88dk.ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
 
 ;set debug=1 for simulator debugging in ticks:
-DEBUG=1
+DEBUG = 0
 
 RESET:
         org 0
-if DEBUG        
-print "**DEBUG MODE**"
+if      DEBUG
+print   "**DEBUG MODE**"
         jp MAIN_DEBUG
 else
-print "**PRODUCTION MODE**"
+print   "**PRODUCTION MODE**"
         jp MAIN
 endif
         ; interrupt vector for SIO
@@ -26,7 +26,7 @@ endif
         defw SPEC_RX_CONDITON
 
 ;---------------------------------------------------
-ifnot DEBUG
+ifnot   DEBUG
         ; Main code
         org $0100           ; main code starts at $0100 because of interrupt vector!
 MAIN:
@@ -62,9 +62,9 @@ ENDLESS_LOOP:
 endif
 
 ;for debugging / simulation purposes:
-if DEBUG
+if      DEBUG
         org $0100
-MAIN_DEBUG:                
+MAIN_DEBUG:
         include 'debug-bios.inc'
 endif
 
@@ -89,12 +89,12 @@ INIT_RAM:
 ;ps/2 needs special mapping of characters.
 ;SPECIAL_FLAGS bit 0 = 1 if serial.
 RX_CHA_AVAILABLE:
-ifnot DEBUG
+ifnot   DEBUG
         ex af,af'	        ;save registers
         exx		        ;save registers
         in a,(SIO_DA)         ;read RX character into A        
-endif        
-        
+endif
+
 
         ld hl,SPECIAL_FLAGS     ; load address of special_flags into hl
         ld b,(hl)               ; load value of address into b
@@ -127,13 +127,13 @@ SET_SERIAL_FLAG:
         ld (SPECIAL_FLAGS),a
 
 END_RX_CHA_AVAILABLE:
-ifnot DEBUG
+ifnot   DEBUG
         call RX_EMP             ;flush receive buffer
         exx		        ;restore registers
         ex af,af'		;restore registers
         ei
         reti
-else        
+else
         ret
 endif
 
@@ -144,8 +144,14 @@ NEW_CHARACTER:
         jr nz,NO_LF            ;If not, continue with NO_LF
         ld a,LF                ;a=line feed
         out (SIO_DA),a         ;output additional LF to serial
+        call CHECK_OPCODE      ;ENTER pressed, check opcode
+        ld a,0
+        ld (CHAR_COUNTER),a    ;reset opcode counter after enter
+        jr CONT_OUTPUT         ;If ENTER, do not store it as opcode
+
 NO_LF:                         ;skip line feed
         call STORE_OPCODE
+CONT_OUTPUT:
         call LCD_MESSAGE       ;echo a to LCD       
         call TX_EMP
         ret
@@ -153,7 +159,11 @@ NO_LF:                         ;skip line feed
 
 ; Stores the character in CHAR_BUFFER
 ; Into (LAST_OPCODE + CHAR_COUNTER)
-STORE_OPCODE:
+STORE_OPCODE:       
+        ld a,(CHAR_BUFFER)
+        cp FIRST_NON_WHTSPC
+        jr c, RESET_OPCODE       ; a was less than the FIRST_NON_WHTSPC.
+
         push hl
         ld a,(CHAR_COUNTER)
         ld hl,LAST_OPCODE
@@ -163,11 +173,33 @@ STORE_OPCODE:
         ld a,(CHAR_BUFFER)
         ld (hl),a               ; Put current char into LAST_OPCODE
         ld a,(CHAR_COUNTER)
-        xor 1                   ; 2 bytes OPCODE, CHAR_COUNTER can be 0 or 1
-        ld (CHAR_COUNTER),a     ; store xored CHAR_COUNTER
-        ;TODO: if CHAR_COUNTER = 1 then check OPCODE.
-
         pop hl
+
+        inc a                   ; increment counter
+        cp OPCODE_LENGTH        ; smaller than OPCODE_LENGTH?
+        jr C,INC_OPCOUNTER      ; if yes, jump over ret and store incd counter
+        ret
+INC_OPCOUNTER:        
+        ld (CHAR_COUNTER),a     ; store incremented counter
+        ret
+RESET_OPCODE:
+        ld a,0
+        ld (CHAR_COUNTER),a
+        ld (LAST_OPCODE),a
+        ld (LAST_OPCODE+1),a
+        ret
+
+; Check if the last opcode means something
+; Stored in LAST_OPCODE
+CHECK_OPCODE:
+        ld hl,LAST_OPCODE       ; last opcode
+        ld de,OC_CLEAR          ; opcode to compare
+        ld b,0                  ; bc=string length
+        ld c,OPCODE_LENGTH
+        call STRCMP
+        jr nz,CHECK_OC2
+        call LCD_CLEAR
+CHECK_OC2
         ret
 
 ; sends a text in hl to the serial output channel A:

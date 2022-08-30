@@ -92,7 +92,12 @@ OC_VERSION
     db "VS"
 OC_RESET
     db "RS"
+OPCODE_LENGTH 
+    equ 2
 
+;first non whitespace
+FIRST_NON_WHTSPC
+    equ $21
 
 ; variables in ram:
 CHAR_BUFFER:
