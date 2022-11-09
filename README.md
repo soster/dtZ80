@@ -19,7 +19,7 @@ The dtZ80 uses a Z80 CPU with clocked with 7.3728 Mhz (which doubles as a clock 
 * [rasm](https://github.com/mkoloberdin/rasm) is used as the assembler.
 * [Visual Studio Code](https://code.visualstudio.com/) is used as an editor and enviroment for assembler
 * [Minipro](https://gitlab.com/DavidGriffith/minipro/) is used to flash the EEPROMs, the hardware is a TL866 II PLUS
-* [z80pack](https://github.com/udo-munk/z80pack) is used for Z80 simulation (z80sim)
+* [ticks](https://github.com/z88dk/z88dk) from the z88dk project is used as an emulator / simulator
 * A usb to ttl converter for serial communication (can be switched to 5V levels, only needs TX and RX)
 
 ## Images
@@ -87,7 +87,7 @@ For ps/2 keyboard to serial conversion I use a "PS2 Keyboard Driver Serial Port 
 TODO
 
 
-### Simulator
+### Simulator / Emulator
 
 The simulator `ticks` from [https://github.com/z88dk/z88dk](z88dk) can be used as a simulator. It provides character output for debugging purposes. Use it like this on assembled binary files:
 
@@ -95,8 +95,6 @@ The simulator `ticks` from [https://github.com/z88dk/z88dk](z88dk) can be used a
 z88dk.z88dk-ticks -iochar 5 bios.bin
 ```
 `-iochar 5` puts out characters just like for the LCD of the dtz80.
-
-Note that there is a bug preventing it from outputting characters right now, use this fork if it is not fixed yet: https://github.com/soster/z88dk
 
 
 ## Next steps / TODOs

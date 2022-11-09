@@ -65,7 +65,7 @@ endif
 if      DEBUG
         org $0100
 MAIN_DEBUG:
-        include 'debug-bios.inc'
+        include "debug-bios.inc"
 endif
 
 
@@ -220,17 +220,17 @@ SPEC_RX_CONDITON:
         call TX_EMP
         reti
 
-        include 'dtz80-lib.inc'
-        include 'lcd-lib.inc'
-        include 'sio-ctc-init.inc'
+        include "dtz80-lib.inc"
+        include "lcd-lib.inc"
+        include "sio-ctc-init.inc"
 
 SERIAL_MODE_STR:
-        db CR,LF,'dtZ80 serial>',0
+        db CR,LF,"dtZ80 serial>",0
 
 STARTUP_STR:
-        db 'dtZ80 Bios V 0.1>',0
+        db "dtZ80 Bios V 0.1>",0
 
 SERIAL_STARTUP_STR:
-        db CR,LF,'dtZ80 Bios V 0.1 ENTER for serial mode>',0
+        db CR,LF,"dtZ80 Bios V 0.1 ENTER for serial mode>",0
 
 
