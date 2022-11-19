@@ -1,11 +1,10 @@
 ; 99 Bottles of Beer program in Z80 assembly language.
 ; Originally from 
 ; http://www.99-bottles-of-beer.net/language-assembler-(z80)-813.html
-; Compile with: z80asm -v -e32 bottles.asm
-; Start simulator: z80sim
-; Into the simulator, type:
-; r bottles.hex
-; g
+; Compile with:
+; rasm bottles.asm bottles
+; Start simulator:
+; z88dk-ticks -iochar 5 bottles.bin
 
 	org 0
 
@@ -42,11 +41,11 @@ printc:                        	; Routine to print C register as ASCII decimal
 	ld a,d                        ; Print first digit in D
 	cp '0'                        ; Don't bother printing leading 0
 	jr z,printc2
-	out (1),a                    ; Spectrum: Print the character in 'A'
+	out (5),a                    ; Spectrum: Print the character in 'A'
 
 printc2:
 	ld a,e                        ; Print second digit in E
-	out (1),a                        ; Spectrum: Print the character in 'A'
+	out (5),a                        ; Spectrum: Print the character in 'A'
 	ret
 
 
@@ -54,7 +53,7 @@ printline:                     ; Routine to print out a line
 	ld a,(hl)                     ; Get character to print
 	cp 0                        ; See if end of string
 	jp z,printend                 ; We're done if it is
-	out (1),a                        ; Simulator: Print the character in a
+	out (5),a                        ; Simulator: Print the character in a
 	inc hl                        ; Move onto the next character
 	jp printline                  ; Loop round
 
