@@ -3,9 +3,9 @@
 ;assemble with symbols:
 ;rasm -s -sa bios.asm bios
 ;debugging with z88dk ticks:
-;z88dk.ticks -iochar 5 bios.bin
+;z88dk-ticks -iochar 5 bios.bin
 ;with symbols:
-;z88dk.ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
+;z88dk-ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
 
 ;set debug=1 for simulator debugging in ticks:
 DEBUG = 0
@@ -56,6 +56,7 @@ MAIN:
 
         im 2               		; set int mode 2
         ei                      ; enable interupt
+        call BOOTSTRAP          ; for music player
 
 ENDLESS_LOOP:
         jp ENDLESS_LOOP
@@ -198,8 +199,24 @@ CHECK_OPCODE:
         ld c,OPCODE_LENGTH
         call STRCMP
         jr nz,CHECK_OC2
-        call LCD_CLEAR
+        call LCD_CLEAR          ;OC_CLEAR found
+        jp CHECK_OC_END
 CHECK_OC2
+        ld hl,LAST_OPCODE
+        ld de,OC_PLAY
+        ld b,0
+        ld c,OPCODE_LENGTH
+        call STRCMP
+        jr nz,CHECK_OC3
+        ld hl,PLAYER_STR
+        call LCD_MESSAGE
+	ld a,0
+	ld (START+10),a
+	ld hl,SONG
+	call STARTHL
+        jp CHECK_OC_END
+CHECK_OC3
+CHECK_OC_END        
         ret
 
 ; sends a text in hl to the serial output channel A:
@@ -224,6 +241,7 @@ SPEC_RX_CONDITON:
         include "lcd-lib.inc"
         include "sio-ctc-init.inc"
 
+
 SERIAL_MODE_STR:
         db CR,LF,"dtZ80 serial>",0
 
@@ -232,5 +250,40 @@ STARTUP_STR:
 
 SERIAL_STARTUP_STR:
         db CR,LF,"dtZ80 Bios V 0.1 ENTER for serial mode>",0
+PLAYER_STR:
+        db "PLAY",0
+
+; Music tracks:
+SONG
+	equ $
+	incbin "./tunes/through_yeovil.pt3"
+BOOTSTRAP:
+  ;copy into RAM:
+	ld hl,BOOTSTRAP_END ;Code to be moved
+	ld de,RAM_DEST ;Destination address
+	ld bc,28000;guess how much bytes to copy
+	ldir                ;Copy
+        ;jp #8000
+        ret
+
+
+
+; -------------------
+; Player Code copied in RAM:
+; -------------------
+BOOTSTRAP_END:
+ORG
+	#8000,BOOTSTRAP_END
+START_RAM:
+	ld a,0
+	ld (START+10),a
+	ld hl,SONG
+	call STARTHL
+; The Music player code:
+	INCLUDE'player.inc'
+
+
+RAM_END
+	equ $ ;end address to copy into ram     
 
 

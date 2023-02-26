@@ -81,6 +81,16 @@ KEY_9
 KEY_0
     equ $45
 
+; if not 0, then start new song
+RESET_SONG
+	equ $f002
+;Only works if copied into RAM:
+RAM_DEST
+	equ $8000
+RAMCELL
+	equ $f000
+  
+
 ;7 segment numbers,0-9:
 numbers:
     db $3f,$6,$5b,$4f,$66,$6d,$7d,$7,$7f,$6f,0    
@@ -92,6 +102,8 @@ OC_VERSION
     db "VS"
 OC_RESET
     db "RS"
+OC_PLAY
+    db "PL"
 OPCODE_LENGTH 
     equ 2
 
@@ -186,9 +198,14 @@ DELAY_SHORT_LOOP:
     pop af
     ret
 
+;Visualization Music Player
+INC_RAM_COUNTER:
+RAM_COUNTER_SEGPRINT:
+    ret
 
     
     include 'tools.inc'; algorithms / subroutines
+
 
 
 
