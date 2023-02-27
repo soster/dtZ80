@@ -254,16 +254,18 @@ PLAYER_STR:
         db "PLAY",0
 
 ; Music tracks:
-SONG
+SONG:
 	equ $
-	incbin "./tunes/through_yeovil.pt3"
+	incbin "./tunes/MmcM_-_Summer_of_Rain.pt3"
 BOOTSTRAP:
   ;copy into RAM:
 	ld hl,BOOTSTRAP_END ;Code to be moved
 	ld de,RAM_DEST ;Destination address
-	ld bc,28000;guess how much bytes to copy
+	;ld bc,28000;guess how much bytes to copy
+        ld bc,PLAYER_END - START
 	ldir                ;Copy
-        ;jp #8000
+        ld hl,SONG
+        jp START+3
         ret
 
 
@@ -273,13 +275,9 @@ BOOTSTRAP:
 ; -------------------
 BOOTSTRAP_END:
 ORG
-	#8000,BOOTSTRAP_END
-START_RAM:
-	ld a,0
-	ld (START+10),a
-	ld hl,SONG
-	call STARTHL
+	RAM_DEST,BOOTSTRAP_END
 ; The Music player code:
+        nop
 	INCLUDE'player.inc'
 
 

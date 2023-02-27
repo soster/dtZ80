@@ -86,9 +86,11 @@ RESET_SONG
 	equ $f002
 ;Only works if copied into RAM:
 RAM_DEST
-	equ $8000
+	equ $9000
 RAMCELL
 	equ $f000
+MDLADDR
+    equ $a000
   
 
 ;7 segment numbers,0-9:
@@ -127,8 +129,11 @@ LAST_OPCODE:                ;opcode always 2 characters, no leading zero
     equ LINE_BUFFER + 20;
 CHAR_COUNTER:
     equ LAST_OPCODE + 2;
+RAM_COUNTER:
+    equ CHAR_COUNTER + 1;
+
 FILL_RAM_SIZE               ;how many bytes do we have to initialize?             
-    equ CHAR_COUNTER+1-CHAR_BUFFER
+    equ RAM_COUNTER+1-CHAR_BUFFER
 
 
 
@@ -177,12 +182,16 @@ loop3
 
 ;interpret a as a number 0-9 and translate it to the 7seg byte
 SEGPRINT_NUM:
+    push hl
+    push bc
     ld hl,numbers
     ld b,0
     ld c,a
     add hl,bc
     ld a,(HL)
     out (SEVENSEGO),a
+    pop bc
+    pop hl
     ret
 
 
@@ -199,9 +208,20 @@ DELAY_SHORT_LOOP:
     ret
 
 ;Visualization Music Player
-INC_RAM_COUNTER:
-RAM_COUNTER_SEGPRINT:
-    ret
+inc_ram_counter:;Increment the counter
+  PUSH  AF     ;save af
+  LD  A,(ram_counter)
+  INC A
+  LD  (ram_counter),A
+  POP AF
+  RET
+
+ram_counter_segprint:;print ram counter to seven segment
+  PUSH  AF
+  LD  A,(ram_counter)
+  OUT (SEVENSEGO),A
+  POP AF
+  RET
 
     
     include 'tools.inc'; algorithms / subroutines

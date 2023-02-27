@@ -86,7 +86,7 @@ EnvTp
 ;START+11 current position value (byte) (optional)
 
 START
-	LD	HL,SONG
+	LD HL,MDLADDR
 STARTHL
 	JR	INIT
 	JP	PLAY
@@ -1399,6 +1399,7 @@ LOUT
 	; --- xxx Visualization ---
 	CALL	inc_ram_counter
 	CALL	ram_counter_segprint
+	;CALL SEGPRINT_NUM
   ;PUSH  AF     ;save af
 	;LD  A,(RESET_SONG)
 	;AND A
@@ -1677,6 +1678,9 @@ outer
 	POP	BC
 	RET                     ;Return from call to this subroutine
 
+
+	NOP
+PLAYER_END
   ;Release 0 steps:
 ;02/27/2005
 ;Merging PT2 and PT3 players; debug
