@@ -67,7 +67,18 @@ The 8 Bit parallel Interface is used to connect a lcd screen mainly. Due to an e
 
 The serial interface is provided by the Z80 SIO chip (SI0/0). It has two channels, A (J1) and B (J6). The clock is provided by the CTC chip for channel A. If you want to use channel B, you have to connect the clock from the pin CTS from J1 to CTS on J6. Please note that RX and TX are labeled from the point of view of the external device, RX is connected to TX on the SIO and vice versa (this maybe was a stupid decistion).
 
+If you are working with linux and you have a usb to serial converter connected to /dev/ttyUSB0 you can use `screen` to enter serial terminal mode:
 
+    screen /dev/ttyUSB0 19200
+
+To enter serial mode of the dtZ80 simply press enter now.
+
+Screen commands consist of "C-a" or ctrl+a (holding down the control key, and then pressing the 'a' key, then releasing both), to enter the command input mode, then commands may be entered with another key stroke.
+To disconnect from the session: Ctrl+a, Ctrl+d, you can then use this to reattach to the session:
+
+    screen -r
+
+To quit screen and close connection: ctrl+a, k.
 
 ### CTC Clock Timer Chip
 
@@ -89,7 +100,7 @@ TODO
 
 ### Simulator / Emulator
 
-The simulator `ticks` from [https://github.com/z88dk/z88dk](z88dk) can be used as a simulator. It provides character output for debugging purposes. Use it like this on assembled binary files:
+The simulator `ticks` from [https://github.com/z88dk/z88dk](https://github.com/z88dk/z88dk) can be used as a simulator. It provides character output for debugging purposes. Use it like this on assembled binary files:
 
 ```
 z88dk.z88dk-ticks -iochar 5 bios.bin
