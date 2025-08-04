@@ -188,22 +188,39 @@ LCD_CLEAR:
 
 
 
-; Wait passively for the lcd to execute the last command
-; Also resets the stored value on the data lines
+; Wait for LCD to be ready by checking busy flag
+; More reliable than fixed delays
 LCD_WAIT:
     push af
-    ld a,$ff
-lcd_wait_loop:
-    dec a
-    jr nz,lcd_wait_loop
+    push bc
+    ld bc, 1000             ; Timeout counter to prevent infinite loop
+LCD_WAIT_BUSY:
+    in a, (LCD_COMMAND)     ; Read busy flag and address counter
+    bit 7, a                ; Check busy flag (bit 7)
+    jr z, LCD_WAIT_DONE     ; If not busy, we're done
+    
+    dec bc                  ; Decrement timeout counter
+    ld a, b
+    or c                    ; Check if BC is zero
+    jr nz, LCD_WAIT_BUSY    ; Continue if not timed out
+    
+    ; Timeout occurred - fall back to short delay
+    call LCD_WAIT_FALLBACK
+    
+LCD_WAIT_DONE:
+    ld a, 0
+    out (SEVENSEGO), a      ; Reset output lines
+    pop bc
+    pop af
+    ret
 
-    ld a,$ff
-lcd_wait_loop2:
+; Fallback delay if busy flag checking fails
+LCD_WAIT_FALLBACK:
+    push af
+    ld a, $ff
+LCD_WAIT_FALLBACK_LOOP:
     dec a
-    jr nz,lcd_wait_loop2
-
-    ld a,0
-    out (SEVENSEGO),a;reset output so that the lcd can acknowledge the last value
+    jr nz, LCD_WAIT_FALLBACK_LOOP
     pop af
     ret
 

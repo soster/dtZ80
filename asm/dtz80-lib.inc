@@ -5,8 +5,16 @@
 ;ld  sp,STACKPOINTER
 
 ;Constants
+; Memory Map Constants
+ROM_START       equ $0000
+ROM_END         equ $7FFF
+RAM_START       equ $8000
+;RAM_END is set in bios.asm at the end of the code.
+;RAM_END         equ $FFFF
+STACK_TOP       equ $FFEF       ; Leave some space at top for I/O
+
 STACKPOINTER
-    equ $ffff;Address for the stack pointer. Init with "ld  sp,STACKPIONTER"
+    equ STACK_TOP               ; Address for the stack pointer. Init with "ld  sp,STACKPOINTER"
 SEVENSEGO
     equ $00;I/O port 7 segment A0-A7=0
 LCD_COMMAND
@@ -41,6 +49,34 @@ SOUND_REGISTER
     equ $80
 SOUND_DATA
     equ $81
+
+; System Constants
+BAUD_RATE       equ 19200
+CPU_FREQ        equ 7372800
+
+
+; Constants for the AY-3-8910A
+AY_PORT_MODE        equ SOUND_REGISTER       ; Port address for mode
+AY_PORT_CHANNEL_1   equ SOUND_REGISTER + 1   ; Port address for channel 1
+AY_PORT_CHANNEL_2   equ SOUND_REGISTER + 2   ; Port address for channel 2
+AY_PORT_CHANNEL_3   equ SOUND_REGISTER + 3   ; Port address for channel 3
+AY_PORT_MIXER       equ SOUND_REGISTER + 6   ; Port address for mixer
+
+; Pitch and volume for each channel
+PITCH_CH1       equ 100    ; Pitch for channel 1
+PITCH_CH2       equ 120    ; Pitch for channel 2
+PITCH_CH3       equ 140    ; Pitch for channel 3
+VOLUME          equ 15     ; Volume for all channels
+
+; Melody notes (in pitch values)
+NOTE_C4     equ 0x3C    ; Middle C
+NOTE_D4     equ 0x36    ; D
+NOTE_E4     equ 0x30    ; E
+NOTE_F4     equ 0x2C    ; F
+NOTE_G4     equ 0x28    ; G
+NOTE_A4     equ 0x24    ; A
+NOTE_B4     equ 0x20    ; B
+NOTE_C5     equ 0x1C    ; High C
 
 CR  equ $0d
 LF  equ $0a
@@ -159,6 +195,58 @@ POST:
     call delay
     ret
 
+;Subroutine for the startup sound
+STARTUP_SOUND
+        ; Set the AY-3-8910A to sound mode
+    ld a, %00110000
+    out (AY_PORT_MODE), a
+
+    ; Configure channel 1
+    ld a, NOTE_C4
+    out (AY_PORT_CHANNEL_1), a
+    call DelayNote
+
+
+    ld a, NOTE_D4
+    out (AY_PORT_CHANNEL_1), a
+    call DelayNote
+
+    ld a, NOTE_E4
+    out (AY_PORT_CHANNEL_1), a
+    call DelayNote
+
+
+    ; Configure channel 1
+    ld a, NOTE_C4
+    out (AY_PORT_CHANNEL_2), a
+    call DelayNote
+    call DelayNote
+
+    ld a, NOTE_D4
+    out (AY_PORT_CHANNEL_2), a
+    call DelayNote
+    call DelayNote
+    call DelayNote
+
+    ld a, NOTE_E4
+    out (AY_PORT_CHANNEL_2), a
+    call DelayNote
+    call DelayNote
+    call DelayNote
+    call DelayNote
+
+    ; Stop the playback
+    ld a, %00000000
+    out (AY_PORT_MIXER), a
+
+    ret
+
+; Delay between notes
+DelayNote:
+    ld bc, 9000   ; Adjust the value in BC to control the duration of each note
+DelayLoop:
+    djnz DelayLoop ; Decrement BC and loop until BC becomes zero
+    ret
 
 ; 3 cascaded 8 bit loops to create some 100ms delay
 DELAY:
@@ -259,4 +347,3 @@ SCAN_LOOKUP:
     db 0,0,0,0,0,0,0,0,0,0     ; scan code 231 to 240
     db 0,0,0,0,0,0,0,0,0,0     ; scan code 241 to 250
     db 0,0,0,0,0,0,0,0,0,0     ; scan code 251 to 260
-

@@ -8,7 +8,7 @@
 ;z88dk-ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
 
 ;set debug=1 for simulator debugging in ticks:
-DEBUG = 0
+DEBUG = 1
 
 RESET:
         org 0
@@ -30,7 +30,7 @@ ifnot   DEBUG
         ; Main code
         org $0100           ; main code starts at $0100 because of interrupt vector!
 MAIN:
-        ld sp,stackpointer
+        ld sp,STACKPOINTER
         call SET_CTC         	; configure CTC
         call SET_SIO         	; configure SIO
 
@@ -50,13 +50,20 @@ MAIN:
         call LCD_MESSAGE
         ld hl,SERIAL_STARTUP_STR
         call SERIAL_MESSAGE
+        call STARTUP_SOUND
 
-        ld a,0             	 	; set high byte of interrupt vectors to point to page 0
+        ; Setup interrupt vector table
+        ld a,0                  ; set high byte of interrupt vectors to point to page 0
         ld i,a
-
-        im 2               		; set int mode 2
-        ei                      ; enable interupt
-        call BOOTSTRAP          ; for music player
+        im 2                    ; set interrupt mode 2
+        
+        ; Initialize interrupt vector table in page 0
+        ; SIO Channel A vectors are calculated by the SIO chip
+        ; Vector base + channel offset + condition offset
+        
+        ei                      ; enable interrupts
+        
+        ;call BOOTSTRAP          ; for music player
 
 ENDLESS_LOOP:
         jp ENDLESS_LOOP
@@ -213,7 +220,7 @@ CHECK_OC2
 	ld a,0
 	ld (START+10),a
 	ld hl,SONG
-	call STARTHL
+	call STARTUP_SOUND
         jp CHECK_OC_END
 CHECK_OC3
 CHECK_OC_END        
@@ -232,9 +239,52 @@ SERIAL_MESSAGE_END:
         ret
 
 SPEC_RX_CONDITON:
-        ;jp $0000            ; if buffer overrun then restart the program
+        push af
+        push hl
+        
+        ; Check error type by reading RR1
+        ld a, 1
+        out (SIO_CA), a        ; Select RR1
+        in a, (SIO_CA)         ; Read error status
+        
+        bit 6, a               ; Overrun error?
+        jr nz, HANDLE_OVERRUN
+        bit 5, a               ; Framing error?
+        jr nz, HANDLE_FRAMING
+        bit 4, a               ; Parity error?
+        jr nz, HANDLE_PARITY
+        
+        ; Unknown error - clear and continue
+        jr ERROR_CLEANUP
+
+HANDLE_OVERRUN:
+        ; Buffer overrun - clear receive buffer
+        call RX_EMP
+        ; Could log error or increment counter here
+        jr ERROR_CLEANUP
+        
+HANDLE_FRAMING:
+        ; Framing error - clear and continue
+        call RX_EMP
+        jr ERROR_CLEANUP
+        
+HANDLE_PARITY:
+        ; Parity error - clear and continue
+        call RX_EMP
+        jr ERROR_CLEANUP
+
+ERROR_CLEANUP:
+        ; Clear any remaining errors
         call RX_EMP
         call TX_EMP
+        
+        ; Reset error flags
+        ld a, 00110000b        ; Error reset command
+        out (SIO_CA), a
+        
+        pop hl
+        pop af
+        ei
         reti
 
         include "dtz80-lib.inc"
@@ -270,7 +320,7 @@ BOOTSTRAP:
 
 
 
-; -------------------
+; -------------------c
 ; Player Code copied in RAM:
 ; -------------------
 BOOTSTRAP_END:
@@ -282,6 +332,4 @@ ORG
 
 
 RAM_END
-	equ $ ;end address to copy into ram     
-
-
+	equ $ ;end address to copy into ram

@@ -2,7 +2,7 @@
 ; Output should be:
 ; dtZ80 Bios V 0.1>test
 	
-	ld sp,stackpointer
+	ld sp,STACKPOINTER
 
 	call INIT_RAM
 		
