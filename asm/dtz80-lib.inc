@@ -176,7 +176,7 @@ FILL_RAM_SIZE               ;how many bytes do we have to initialize?
 ;subroutines:
 
 ;startup initializations
-startup:
+STARTUP:
     ld sp,stackpointer
     ret
 
@@ -195,58 +195,82 @@ POST:
     call delay
     ret
 
-;Subroutine for the startup sound
-STARTUP_SOUND
-        ; Set the AY-3-8910A to sound mode
-    ld a, %00110000
-    out (AY_PORT_MODE), a
 
-    ; Configure channel 1
-    ld a, NOTE_C4
-    out (AY_PORT_CHANNEL_1), a
-    call DelayNote
+    ; Define a simple melody
+MELODY:
+    db 262   ; C4 (do)
+    db 262   ; C4 (do)
+    db 392   ; G4 (sol)
+    db 392   ; G4 (sol)    
+    db 440   ; A4 (la)
+    db 440   ; A4 (la)
+    db 392   ; G4 (sol)
 
+    db 349   ; F4 (fa)
+    db 349   ; F4 (fa)
+    db 330   ; E4 (mi)
+    db 330   ; E4 (mi)
+    db 294   ; D4 (re)
+    db 294   ; D4 (re)
+    db 262   ; C4 (do) 
 
-    ld a, NOTE_D4
-    out (AY_PORT_CHANNEL_1), a
-    call DelayNote
+; Define note lengths (in arbitrary time units)
+NOTE_LENGTHS:
+    db 10, 10, 10, 10, 10, 10, 20 ; Two measures for the first section
+    db 10, 10, 10, 10, 10, 10, 20 ; Repeat same for the second section
 
-    ld a, NOTE_E4
-    out (AY_PORT_CHANNEL_1), a
-    call DelayNote
+; Subroutine for the startup sound  
+STARTUP_SOUND:  
+    ld a, 7  
+    out (SOUND_REGISTER), a ; select the mixer register  
 
+    ld a, 62  
+    out (SOUND_DATA), a  ; enable channel A only  
 
-    ; Configure channel 1
-    ld a, NOTE_C4
-    out (AY_PORT_CHANNEL_2), a
-    call DelayNote
-    call DelayNote
+    ld a, 8  
+    out (SOUND_REGISTER), a ; channel A volume  
 
-    ld a, NOTE_D4
-    out (AY_PORT_CHANNEL_2), a
-    call DelayNote
-    call DelayNote
-    call DelayNote
+    ld a, 15  
+    out (SOUND_DATA), a ; set maximum volume  
 
-    ld a, NOTE_E4
-    out (AY_PORT_CHANNEL_2), a
-    call DelayNote
-    call DelayNote
-    call DelayNote
-    call DelayNote
+    ld a, 0  
+    out (SOUND_REGISTER), a ; select channel A pitch  
 
-    ; Stop the playback
-    ld a, %00000000
-    out (AY_PORT_MIXER), a
+    ; Initialize pointers
+    ld hl, MELODY         ; Point to the melody
+    ld de, NOTE_LENGTHS   ; Point to note lengths
+  
+    ld b, 8               ; Number of notes to play
 
-    ret
+PLAY_MELODY:
+    ld a, (hl)           ; Load the current note frequency
+    out (SOUND_DATA), a   ; Set the pitch
+    inc hl                ; Move to the next note
 
-; Delay between notes
-DelayNote:
-    ld bc, 9000   ; Adjust the value in BC to control the duration of each note
-DelayLoop:
-    djnz DelayLoop ; Decrement BC and loop until BC becomes zero
-    ret
+    ld a, (de)           ; Load note length
+    call SND_PAUSE       ; Pause for the note length
+    inc de                ; Move to the next length
+    djnz PLAY_MELODY     ; Decrement B and loop if not zero
+    ld a, 0
+    out (SOUND_DATA), a ; set maximum volume  
+
+    ret                   ; Return from subroutine
+
+SND_PAUSE:  
+    push bc  
+    push de  
+    push af  
+    ld bc, 0xFFFF ; Adjust the delay loop as needed for timing
+SND_OUTER:  
+    dec bc            ; Decrement BC  
+    ld a, b          ; Copy B into A  
+    or c             ; Bitwise OR of C with A (now, A = B | C)  
+    jp nz, SND_OUTER ; If A is not zero, loop back to SND_OUTER
+    pop af  
+    pop de  
+    pop bc  
+    ret               ; Return from subroutine
+
 
 ; 3 cascaded 8 bit loops to create some 100ms delay
 DELAY:

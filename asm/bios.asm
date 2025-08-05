@@ -40,6 +40,8 @@ MAIN:
 
         call POST
 
+        call STARTUP_SOUND
+
         call INIT_RAM
 
         call LCD_RESET
