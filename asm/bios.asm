@@ -8,7 +8,7 @@
 ;z88dk-ticks -x bios.sym -pc 0 -d -iochar 5 bios.bin
 
 ;set debug=1 for simulator debugging in ticks:
-DEBUG = 1
+DEBUG = 0
 
 RESET:
         org 0
